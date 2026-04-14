@@ -1,0 +1,9 @@
+{
+  "name": "Beautistic Glam Premium Beauty",
+  "description": "A sophisticated e-commerce platform for high-end makeup and beauty products, featuring a minimalist aesthetic and intelligent product discovery under the Beautistic Glam brand.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "y7": [],
+  "Yp": []
+}

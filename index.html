@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautistic Glam | Premium Beauty & Skincare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts: Plus Jakarta Sans (Primary) and Inter (Secondary/Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Global Typography and Color Overrides */
+        :root {
+            --font-primary: 'Plus Jakarta Sans', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+            --brand-radius: 5px;
+            /* Luxury feminine red/pink */
+            --brand-color: #C24458;
+            --brand-color-hover: #A33648;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: #FAF9F6;
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
+            /* Decrease spacing of secondary font as requested */
+            letter-spacing: -0.015em;
+        }
+        
+        /* Apply Plus Jakarta Sans to all headings and brand elements */
+        h1, h2, h3, h4, h5, h6, .font-serif {
+            font-family: var(--font-primary) !important;
+            font-weight: 600; 
+            letter-spacing: -0.025em;
+        }
+
+        /* Specifically for the Logo */
+        .brand-logo {
+            font-family: var(--font-primary) !important;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        /* Global Rounding for all "boxes" */
+        button, input, select, textarea, .rounded-box {
+            border-radius: var(--brand-radius) !important;
+        }
+
+        /* Custom scrollbar with brand color */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FAF9F6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--brand-color);
+            opacity: 0.5;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--brand-color-hover);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slideDown {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        .font-serif {
+            font-family: var(--font-primary) !important;
+        }
+
+        /* Brand Utility Classes */
+        .bg-brand { background-color: var(--brand-color); }
+        .bg-brand-hover:hover { background-color: var(--brand-color-hover); }
+        .text-brand { color: var(--brand-color); }
+        .border-brand { border-color: var(--brand-color); }
+    </style>
+
+
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
