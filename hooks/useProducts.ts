@@ -66,8 +66,48 @@ const FALLBACK_PRODUCTS: Product[] = [
     reviewsCount: 320,
     sku: 'BL-LP-008',
     isTopSeller: true
+  },
+  {
+    id: '5',
+    name: 'Rose Water Toner',
+    brand: 'BEAUTY',
+    price: 28.00,
+    category: 'Face',
+    tags: ['Organic', 'Natural'],
+    image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbb43fe?w=800',
+    description: 'Gentle hydrating toner with pure rose water.',
+    ingredients: ['Rose Water', 'Glycerin', 'Aloe Vera'],
+    howToUse: 'Apply with cotton pad after cleansing.',
+    rating: 4.7,
+    reviewsCount: 156,
+    sku: 'BL-TN-005',
+    isNew: true
+  },
+  {
+    id: '6',
+    name: 'Night Repair Mask',
+    brand: 'ENDYMIONS',
+    price: 65.00,
+    category: 'Skincare',
+    tags: ['Clean', 'Cruelty-Free'],
+    image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800',
+    description: 'Overnight treatment for deep skin repair.',
+    ingredients: ['Retinol', 'Peptides', 'Hyaluronic Acid'],
+    howToUse: 'Apply thin layer before bed.',
+    rating: 4.8,
+    reviewsCount: 89,
+    sku: 'BL-MK-006',
+    isTopSeller: true
   }
 ];
+
+// Fallback product map for single product lookup
+const FALLBACK_PRODUCT_MAP: Record<string, Product> = FALLBACK_PRODUCTS.reduce((acc, p) => {
+  acc[p.id] = p;
+  return acc;
+}, {} as Record<string, Product>);
+
+export { FALLBACK_PRODUCT_MAP };
 
 interface UseProductsOptions {
   category?: string;
@@ -76,11 +116,11 @@ interface UseProductsOptions {
   searchQuery?: string;
 }
 
+// Hook for fetching list of products
 export const useProducts = (options: UseProductsOptions = {}) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDbConnected, setIsDbConnected] = useState(false);
 
   const { category, sortBy = 'default', searchQuery } = options;
   const tags = options.tags ?? [];
@@ -112,7 +152,6 @@ export const useProducts = (options: UseProductsOptions = {}) => {
         console.log('Supabase error, using fallback:', fetchError.message);
         // Use fallback if database error
         let result = [...FALLBACK_PRODUCTS];
-        setIsDbConnected(false);
         
         if (category) {
           result = result.filter(p => p.category === category);
@@ -132,9 +171,6 @@ export const useProducts = (options: UseProductsOptions = {}) => {
       if (result.length === 0) {
         console.log('Empty database, using fallback products');
         result = [...FALLBACK_PRODUCTS];
-        setIsDbConnected(true);
-      } else {
-        setIsDbConnected(true);
       }
 
       // Apply sorting
@@ -160,9 +196,7 @@ export const useProducts = (options: UseProductsOptions = {}) => {
       setProducts(result);
     } catch (err: any) {
       console.error('Error fetching products:', err);
-      // Fallback on any error
       setProducts([...FALLBACK_PRODUCTS]);
-      setIsDbConnected(false);
     } finally {
       setLoading(false);
     }
@@ -180,20 +214,18 @@ export const useProducts = (options: UseProductsOptions = {}) => {
   };
 };
 
-// Also export the fallback for useProduct
-const FALLBACK_PRODUCT_MAP: Record<string, Product> = {
-  '1': FALLBACK_PRODUCTS[0],
-  '2': FALLBACK_PRODUCTS[1],
-  '3': FALLBACK_PRODUCTS[2],
-  '4': FALLBACK_PRODUCTS[3],
-};
-
+// Hook for fetching single product by ID
 export const useProduct = (productId: string) => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProduct = useCallback(async () => {
+    if (!productId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);

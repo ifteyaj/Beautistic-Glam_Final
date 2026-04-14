@@ -88,6 +88,7 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      console.log('>>> Attempting signup with:', email);
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
       const { data, error } = await supabase.auth.signUp({
@@ -97,6 +98,8 @@ export const useAuth = () => {
           data: { name },
         },
       });
+
+      console.log('>>> Signup response - data:', !!data.user, 'error:', error);
 
       if (error) throw error;
 
@@ -130,12 +133,15 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('>>> Attempting signin with:', email);
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      console.log('>>> Signin response - data:', !!data.user, 'error:', error);
 
       if (error) throw error;
 

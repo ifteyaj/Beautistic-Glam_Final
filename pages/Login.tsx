@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { motion } from 'motion/react';
@@ -14,6 +14,13 @@ const Login: React.FC = () => {
   const { signIn, signUp, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/shop', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const validateForm = () => {
     const newErrors: typeof errors = {};
     const emailError = validateEmail(email);
@@ -22,12 +29,28 @@ const Login: React.FC = () => {
     if (emailError) newErrors.email = emailError;
     if (passwordError) newErrors.password = passwordError;
     
+    // Additional validation
+    if (email && !email.includes('@')) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // Prevent multiple rapid submissions
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+
   const handleSubmit = async (e: React.FormEvent, isRegister = false) => {
     e.preventDefault();
+    
+    // Rate limit check
+    const now = Date.now();
+    if (now - lastSubmitTime < 3000) {
+      setErrors({ form: 'Please wait a moment before trying again' });
+      return;
+    }
+    setLastSubmitTime(now);
     
     if (!validateForm()) return;
 
@@ -37,22 +60,38 @@ const Login: React.FC = () => {
     if (isRegister) {
       const result = await signUp(sanitizedEmail, sanitizedPassword, sanitizedEmail.split('@')[0]);
       if (result.success) {
-        navigate('/shop');
+        navigate('/shop', { replace: true });
       } else {
-        setErrors({ form: result.error });
+        // Provide more helpful error messages
+        let errorMsg = result.error || 'Registration failed';
+        if (errorMsg.includes('email rate limit')) {
+          errorMsg = 'Please wait 60 seconds before trying to register again';
+        } else if (errorMsg.includes('invalid')) {
+          errorMsg = 'Please enter a valid email address';
+        }
+        setErrors({ form: errorMsg });
       }
     } else {
       const result = await signIn(sanitizedEmail, sanitizedPassword);
       if (result.success) {
-        navigate('/shop');
+        navigate('/shop', { replace: true });
       } else {
-        setErrors({ form: result.error || 'Invalid credentials' });
+        let errorMsg = result.error || 'Invalid credentials';
+        if (errorMsg.includes('Invalid login credentials')) {
+          errorMsg = 'Invalid email or password';
+        } else if (errorMsg.includes('rate limit')) {
+          errorMsg = 'Please wait a moment before trying again';
+        }
+        setErrors({ form: errorMsg });
       }
     }
   };
 
+  // Prevent multiple rapid clicks on Create Account button
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  // Don't render if already authenticated (redirecting)
   if (isAuthenticated) {
-    navigate('/shop');
     return null;
   }
 
@@ -143,10 +182,16 @@ const Login: React.FC = () => {
         <div className="mt-8 pt-8 border-t border-stone-100 text-center">
           <p className="text-stone-500 text-sm mb-4">Don't have an account?</p>
           <button 
-            onClick={(e) => handleSubmit(e as React.FormEvent, true)}
-            className="text-brand font-bold uppercase tracking-widest text-xs hover:underline"
+            onClick={(e) => {
+              if (isRegistering || isLoading) return;
+              setIsRegistering(true);
+              handleSubmit(e as React.FormEvent, true);
+              setTimeout(() => setIsRegistering(false), 3000);
+            }}
+            disabled={isRegistering || isLoading}
+            className="text-brand font-bold uppercase tracking-widest text-xs hover:underline disabled:opacity-50"
           >
-            Create Account
+            {isRegistering ? 'Creating...' : 'Create Account'}
           </button>
         </div>
       </motion.div>
