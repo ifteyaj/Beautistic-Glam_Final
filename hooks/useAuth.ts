@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase, User } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
+import { authService } from '../lib/services';
 import type { User as AppUser } from '../types';
 
 interface AuthState {
@@ -24,13 +25,18 @@ export const useAuth = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching user:', error);
-        return null;
+        // User profile might not exist yet, create basic user
+        return {
+          id: userId,
+          email: '',
+          name: 'User',
+          role: 'user' as const,
+        };
       }
 
       return data as AppUser;
     } catch (error) {
-      console.error('Error in fetchUser:', error);
+      console.error('Error fetching user:', error);
       return null;
     }
   }, []);
@@ -88,35 +94,19 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      console.log('>>> Attempting signup with:', email);
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name },
-        },
-      });
+      const result = await authService.signUp(email, password, name);
 
-      console.log('>>> Signup response - data:', !!data.user, 'error:', error);
+      if (!result.success) {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
+        return result;
+      }
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Create user profile in users table
-        const { error: profileError } = await supabase.from('users').insert({
-          id: data.user.id,
-          email,
-          name,
-          role: 'user',
-        });
-
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-        }
-
-        const userData = await fetchUser(data.user.id);
+      // Get user data
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const userData = await fetchUser(user.id);
         setAuthState({
           user: userData,
           isAuthenticated: true,
@@ -124,29 +114,29 @@ export const useAuth = () => {
         });
       }
 
-      return { success: true };
+      return result;
     } catch (error: any) {
       console.error('Sign up error:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       return { success: false, error: error.message || 'Sign up failed' };
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('>>> Attempting signin with:', email);
       setAuthState(prev => ({ ...prev, isLoading: true }));
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const result = await authService.signIn(email, password);
 
-      console.log('>>> Signin response - data:', !!data.user, 'error:', error);
+      if (!result.success) {
+        setAuthState(prev => ({ ...prev, isLoading: false }));
+        return result;
+      }
 
-      if (error) throw error;
-
-      if (data.user) {
-        const userData = await fetchUser(data.user.id);
+      // Get user data
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const userData = await fetchUser(user.id);
         setAuthState({
           user: userData,
           isAuthenticated: true,
@@ -154,9 +144,10 @@ export const useAuth = () => {
         });
       }
 
-      return { success: true };
+      return result;
     } catch (error: any) {
       console.error('Sign in error:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       return { success: false, error: error.message || 'Invalid credentials' };
     }
   };
@@ -164,7 +155,7 @@ export const useAuth = () => {
   const signOut = async () => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }));
-      await supabase.auth.signOut();
+      await authService.signOut();
       setAuthState({
         user: null,
         isAuthenticated: false,
@@ -172,6 +163,7 @@ export const useAuth = () => {
       });
     } catch (error) {
       console.error('Sign out error:', error);
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   };
 
