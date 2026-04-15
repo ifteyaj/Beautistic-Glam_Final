@@ -1,82 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, User, ShieldCheck } from 'lucide-react';
-
-// Simple mock auth context (without Supabase dependency)
-interface AuthContextType {
-  user: null;
-  isAuthenticated: false;
-  isLoading: false;
-  signIn: () => {};
-  signOut: () => {};
-  signUp: () => {};
-}
-
-const MockAuthContext = React.createContext<AuthContextType>({
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  signIn: () => {},
-  signOut: () => {},
-  signUp: () => {},
-});
-
-// Simple cart context
-interface CartContextType {
-  cartItems: [];
-  cartCount: 0;
-  cartTotal: 0;
-  addToCart: () => {};
-  removeFromCart: () => {};
-}
-
-const MockCartContext = React.createContext<CartContextType>({
-  cartItems: [],
-  cartCount: 0,
-  cartTotal: 0,
-  addToCart: () => {},
-  removeFromCart: () => {},
-});
-
-// Simple wishlist context
-interface WishlistContextType {
-  wishlist: [];
-  toggleWishlist: () => {};
-}
-
-const MockWishlistContext = React.createContext<WishlistContextType>({
-  wishlist: [],
-  toggleWishlist: () => {},
-});
-
-// Provider wrappers
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <MockAuthContext.Provider value={{ user: null, isAuthenticated: false, isLoading: false, signIn: () => {}, signOut: () => {}, signUp: () => {} }}>
-    {children}
-  </MockAuthContext.Provider>
-);
-
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <MockCartContext.Provider value={{ cartItems: [], cartCount: 0, cartTotal: 0, addToCart: () => {}, removeFromCart: () => {} }}>
-    {children}
-  </MockCartContext.Provider>
-);
-
-export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <MockWishlistContext.Provider value={{ wishlist: [], toggleWishlist: () => {} }}>
-    {children}
-  </MockWishlistContext.Provider>
-);
-
-// Custom hooks (simplified without Supabase)
-export const useAuth = () => React.useContext(MockAuthContext);
-export const useCart = () => React.useContext(MockCartContext);
-export const useWishlist = () => React.useContext(MockWishlistContext);
+import { LogOut, User } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { useCart } from '../../hooks/useCart';
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, signOut, isLoading } = useAuth();
   const { cartCount } = useCart();
-  const { wishlist } = useWishlist();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
@@ -101,6 +31,12 @@ const Navbar: React.FC = () => {
       navigate(`/shop?q=${encodeURIComponent(searchVal)}`);
       setIsSearchOpen(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+    setIsAccountMenuOpen(false);
   };
 
   return (
@@ -129,10 +65,42 @@ const Navbar: React.FC = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
             
+            {/* Account dropdown - shows based on auth state */}
             <div className="relative" ref={accountMenuRef}>
-              <Link to="/login" className="text-stone-600 hover:text-[#C24458] p-1">
-                <User className="w-5 h-5" />
-              </Link>
+              {isLoading ? (
+                <div className="w-5 h-5 animate-pulse bg-stone-200 rounded-full" />
+              ) : isAuthenticated ? (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsAccountMenuOpen(!isAccountMenuOpen);
+                  }}
+                  className="flex items-center text-stone-600 hover:text-[#C24458] p-1"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+              ) : (
+                <Link to="/login" className="text-stone-600 hover:text-[#C24458] p-1">
+                  <User className="w-5 h-5" />
+                </Link>
+              )}
+
+              {/* Account dropdown menu */}
+              {isAccountMenuOpen && isAuthenticated && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-stone-200 rounded-[5px] shadow-lg py-2">
+                  <div className="px-4 py-2 border-b border-stone-100">
+                    <p className="text-sm font-medium text-stone-900">{user?.name || 'User'}</p>
+                    <p className="text-xs text-stone-500">{user?.email || ''}</p>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full px-4 py-2 text-left text-sm text-stone-600 hover:bg-stone-50 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
             
             <Link to="/wishlist" className="text-stone-600 hover:text-[#C24458] relative p-1">
@@ -141,6 +109,11 @@ const Navbar: React.FC = () => {
             
             <Link to="/cart" className="text-stone-600 hover:text-[#C24458] relative p-1">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#C24458] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </div>
         </div>
