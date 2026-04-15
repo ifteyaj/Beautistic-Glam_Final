@@ -7,12 +7,9 @@ import ProductCard from '../components/Product/ProductCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorState, EmptyState } from '../components/EmptyState';
 
-const TAGS = ['Organic', 'Fresh', 'Clean', 'Natural', 'Cruelty-Free', 'Vegan'];
-
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'rating' | 'newest'>('default');
-  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
   
   const query = searchParams.get('q');
@@ -20,7 +17,6 @@ const Shop: React.FC = () => {
 
   const { products, loading, error, refetch } = useProducts({
     category,
-    tags: activeTags.length > 0 ? activeTags : undefined,
     sortBy,
     searchQuery: query || undefined,
   });
@@ -28,10 +24,6 @@ const Shop: React.FC = () => {
   const filteredProducts = useMemo(() => {
     return products.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
   }, [products, priceRange]);
-
-  const toggleTag = (tag: string) => {
-    setActiveTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-  };
 
   if (error) {
     return (
@@ -79,7 +71,7 @@ const Shop: React.FC = () => {
             </ul>
           </div>
 
-          <div className="bg-white p-6 rounded-[5px] border border-stone-100">
+<div className="bg-white p-6 rounded-[5px] border border-stone-100">
             <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand mb-6 border-b border-stone-50 pb-2">Price Range</h4>
             <div className="space-y-4">
               <input 
@@ -96,24 +88,7 @@ const Shop: React.FC = () => {
               </div>
             </div>
           </div>
-
-          <div className="bg-white p-6 rounded-[5px] border border-stone-100">
-            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand mb-6 border-b border-stone-50 pb-2">Product Tags</h4>
-            <div className="flex flex-wrap gap-2">
-              {TAGS.map(tag => (
-                <button 
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1.5 text-[10px] uppercase tracking-widest border transition-colors rounded-[5px] ${activeTags.includes(tag) ? 'bg-brand text-white border-brand' : 'bg-white text-stone-600 border-stone-200 hover:border-brand hover:text-brand'}`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
         </aside>
-
-        {/* Product Grid Area */}
         <main className="flex-1">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-[5px] border border-stone-100">
             <p className="text-sm text-stone-500">
@@ -145,7 +120,7 @@ const Shop: React.FC = () => {
           ) : (
             <EmptyState 
               message="No products found for your criteria."
-              onAction={() => { setActiveTags([]); setPriceRange([0, 500]); setSortBy('default'); }}
+              onAction={() => { setPriceRange([0, 500]); setSortBy('default'); }}
               actionLabel="Clear all filters"
             />
           )}

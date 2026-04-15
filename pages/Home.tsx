@@ -34,13 +34,13 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center overflow-hidden">
         <img 
-          src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1920&auto=format&fit=crop" 
+          src="/hero.png" 
           className="absolute inset-0 w-full h-full object-cover"
           alt="Luxury Beauty"
         />
         <div className="absolute inset-0 bg-black/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="max-w-xl text-white">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full ml-auto">
+          <div className="max-w-xl text-white ml-auto pr-8 md:pr-16">
             <h2 className="text-sm uppercase tracking-[0.2em] mb-4">The Summer Collection</h2>
             <h1 className="text-6xl md:text-8xl font-serif mb-8 leading-tight">Elevate Your Inner Glow</h1>
             <Link 
@@ -57,7 +57,7 @@ const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="relative h-96 group overflow-hidden rounded-[5px]">
-            <img src="https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=800&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Face" />
+            <img src="/images/categories/face care.jpg" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Face" />
             <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-brand/40 transition-colors" />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
               <h3 className="text-3xl font-serif mb-4">Face Care</h3>
@@ -65,7 +65,7 @@ const Home: React.FC = () => {
             </div>
           </div>
           <div className="relative h-96 group overflow-hidden rounded-[5px]">
-            <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Lips" />
+            <img src="/images/categories/color palette.jpg" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Lips" />
              <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-brand/40 transition-colors" />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
               <h3 className="text-3xl font-serif mb-4">Color Palette</h3>

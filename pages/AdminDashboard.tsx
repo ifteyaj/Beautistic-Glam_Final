@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Search, Trash2, X, Image as ImageIcon, Package, ShoppingCart, Eye, EyeOff } from 'lucide-react';
+import { Plus, Search, Trash2, X, Image as ImageIcon, Package, ShoppingCart, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { productService, ProductInput } from '../lib/products';
+import { orderService, OrderRecord, OrderItemRecord } from '../lib/orders';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import type { Product } from '../types';
 import { CATEGORIES } from '../constants';
@@ -13,8 +14,10 @@ const AdminDashboard: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [orderItems, setOrderItems] = useState<Record<string, OrderItemRecord[]>>({});
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newProduct, setNewProduct] = useState<ProductInput>({
@@ -61,12 +64,18 @@ const AdminDashboard: React.FC = () => {
 
   const fetchOrders = async () => {
     setOrdersLoading(true);
-    const { data, error } = await (window as any).supabase
-      .from('orders')
-      .select('*, order_items(*, products(*))')
-      .order('created_at', { ascending: false });
-
-    if (data) setOrders(data);
+    const result = await orderService.getAllOrders();
+    if (result.success && result.orders) {
+      setOrders(result.orders);
+      const itemsMap: Record<string, OrderItemRecord[]> = {};
+      for (const order of result.orders) {
+        const itemsResult = await orderService.getOrderWithItems(order.id);
+        if (itemsResult.success && itemsResult.items) {
+          itemsMap[order.id] = itemsResult.items;
+        }
+      }
+      setOrderItems(itemsMap);
+    }
     setOrdersLoading(false);
   };
 
@@ -125,6 +134,13 @@ const AdminDashboard: React.FC = () => {
     const result = await productService.toggleVisibility(productId, isActive);
     if (result.success) {
       await fetchProducts();
+    }
+  };
+
+  const handleUpdateStatus = async (orderId: string, status: OrderRecord['status']) => {
+    const result = await orderService.updateOrderStatus(orderId, status);
+    if (result.success) {
+      await fetchOrders();
     }
   };
 
@@ -259,43 +275,108 @@ const AdminDashboard: React.FC = () => {
                 <p>No orders yet</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-stone-50 text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                    <tr>
-                      <th className="px-6 py-4">Order ID</th>
-                      <th className="px-6 py-4">Customer</th>
-                      <th className="px-6 py-4">Items</th>
-                      <th className="px-6 py-4">Total</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm divide-y divide-stone-50">
-                    {orders.map((order) => (
-                      <tr key={order.id} className="hover:bg-stone-50 transition-colors">
-                        <td className="px-6 py-4 font-mono text-xs">{order.id?.slice(0, 8)}...</td>
-                        <td className="px-6 py-4">{order.user_id?.slice(0, 8) || 'Guest'}</td>
-                        <td className="px-6 py-4">{order.order_items?.length || 0} items</td>
-                        <td className="px-6 py-4 font-medium">${(order.total_price || 0).toFixed(2)}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            order.status === 'paid' ? 'bg-blue-100 text-blue-700' :
-                            order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :
-                            order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                            'bg-stone-100 text-stone-700'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-stone-400">
-                          {new Date(order.created_at).toLocaleDateString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="divide-y divide-stone-100">
+                {orders.map((order) => (
+                  <div key={order.id} className="p-6 hover:bg-stone-50 transition-colors">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="text-left">
+                          <p className="font-mono text-xs text-stone-400">#{order.id.slice(0, 8).toUpperCase()}</p>
+                          <p className="font-medium text-stone-900 mt-1">{order.customer_name}</p>
+                          <p className="text-xs text-stone-500">{order.phone}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="font-medium text-brand">${(order.total_amount || 0).toFixed(2)}</p>
+                          <p className="text-xs text-stone-400">{orderItems[order.id]?.length || 0} items</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :
+                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          order.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                          'bg-stone-100 text-stone-700'
+                        }`}>
+                          {order.status}
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-stone-400 transition-transform ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+
+                    {expandedOrder === order.id && (
+                      <div className="mt-6 pt-6 border-t border-stone-200">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">Delivery Address</h4>
+                            <p className="text-sm text-stone-900">{order.address}</p>
+                            <p className="text-sm text-stone-600">{order.city}, {order.zip_code}</p>
+                            {order.notes && <p className="text-xs text-stone-500 mt-2">Note: {order.notes}</p>}
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3">Order Items</h4>
+                            <div className="space-y-3">
+                              {orderItems[order.id]?.map((item) => (
+                                <div key={item.id} className="flex items-center gap-3">
+                                  <img src={item.product_image} alt={item.product_name} className="w-10 h-10 rounded-[5px] object-cover" />
+                                  <div className="flex-1">
+                                    <p className="text-sm text-stone-900">{item.product_name}</p>
+                                    <p className="text-xs text-stone-500">Qty: {item.quantity} × ${item.price.toFixed(2)}</p>
+                                  </div>
+                                  <p className="text-sm font-medium text-brand">${(item.price * item.quantity).toFixed(2)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 pt-6 border-t border-stone-200 flex items-center justify-between">
+                          <div className="text-xs text-stone-400">
+                            Ordered on {new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div className="flex gap-2">
+                            {order.status === 'pending' && (
+                              <button 
+                                onClick={() => handleUpdateStatus(order.id, 'confirmed')}
+                                className="px-4 py-2 bg-blue-600 text-white text-xs font-bold uppercase tracking-widest rounded-[5px] hover:bg-blue-700 transition-colors"
+                              >
+                                Confirm
+                              </button>
+                            )}
+                            {order.status === 'confirmed' && (
+                              <button 
+                                onClick={() => handleUpdateStatus(order.id, 'shipped')}
+                                className="px-4 py-2 bg-purple-600 text-white text-xs font-bold uppercase tracking-widest rounded-[5px] hover:bg-purple-700 transition-colors"
+                              >
+                                Mark Shipped
+                              </button>
+                            )}
+                            {order.status === 'shipped' && (
+                              <button 
+                                onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                                className="px-4 py-2 bg-green-600 text-white text-xs font-bold uppercase tracking-widest rounded-[5px] hover:bg-green-700 transition-colors"
+                              >
+                                Mark Delivered
+                              </button>
+                            )}
+                            {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                              <button 
+                                onClick={() => handleUpdateStatus(order.id, 'cancelled')}
+                                className="px-4 py-2 border border-red-300 text-red-600 text-xs font-bold uppercase tracking-widest rounded-[5px] hover:bg-red-50 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
