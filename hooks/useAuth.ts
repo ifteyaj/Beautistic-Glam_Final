@@ -17,7 +17,7 @@ export const useAuth = () => {
   });
 
   // Fetch user profile from users table
-  const fetchUserProfile = useCallback(async (userId: string) => {
+  const fetchUserProfile = useCallback(async (userId: string, userEmail?: string) => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -26,21 +26,25 @@ export const useAuth = () => {
         .single();
 
       if (error) {
-        // Profile doesn't exist, return basic user
+        // Profile doesn't exist, return basic user with email from auth
         return {
           id: userId,
-          email: '',
+          email: userEmail || '',
           name: 'User',
           role: 'user' as const,
         };
       }
 
-      return data as AppUser;
+      // Use email from auth if profile doesn't have it
+      return {
+        ...data,
+        email: data.email || userEmail || '',
+      } as AppUser;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return {
         id: userId,
-        email: '',
+        email: userEmail || '',
         name: 'User',
         role: 'user' as const,
       };
@@ -61,7 +65,7 @@ export const useAuth = () => {
         
         if (session?.user) {
           console.log('[Auth] Session found:', session.user.email);
-          const userData = await fetchUserProfile(session.user.id);
+          const userData = await fetchUserProfile(session.user.id, session.user.email);
           
           setAuthState({
             user: userData,
@@ -95,7 +99,7 @@ export const useAuth = () => {
       console.log('[Auth] State change:', event);
       
       if (event === 'SIGNED_IN' && session?.user) {
-        const userData = await fetchUserProfile(session.user.id);
+        const userData = await fetchUserProfile(session.user.id, session.user.email);
         setAuthState({
           user: userData,
           isAuthenticated: true,
@@ -126,7 +130,7 @@ export const useAuth = () => {
     const result = await authService.signUp(email, password, name);
 
     if (result.success && result.user) {
-      const userData = await fetchUserProfile(result.user.id);
+      const userData = await fetchUserProfile(result.user.id, result.user.email);
       setAuthState({
         user: userData,
         isAuthenticated: true,
@@ -150,7 +154,7 @@ export const useAuth = () => {
     const result = await authService.signIn(email, password);
 
     if (result.success && result.user) {
-      const userData = await fetchUserProfile(result.user.id);
+      const userData = await fetchUserProfile(result.user.id, result.user.email);
       setAuthState({
         user: userData,
         isAuthenticated: true,
