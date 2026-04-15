@@ -34,11 +34,7 @@ const AdminDashboard: React.FC = () => {
     isActive: true,
   });
 
-  const isAdmin = isAuthenticated && (
-    user?.role === 'admin' || 
-    user?.email === 'admin@Glam.com' ||
-    user?.email === 'admin@bliss.com'
-  );
+  const isAdmin = isAuthenticated && user?.role === 'admin';
 
   // Fetch all products for admin
   const fetchProducts = async () => {
@@ -80,16 +76,6 @@ const AdminDashboard: React.FC = () => {
   };
 
   if (authLoading) return <LoadingSpinner size="lg" className="min-h-screen" />;
-  if (!isAuthenticated || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-serif mb-4">Access Denied</h2>
-          <p className="text-stone-500">You need admin access to view this page.</p>
-        </div>
-      </div>
-    );
-  }
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,13 +106,9 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-
     const result = await productService.deleteProduct(productId);
     if (result.success) {
       await fetchProducts();
-    } else {
-      alert(result.error || 'Failed to delete product');
     }
   };
 
@@ -471,16 +453,6 @@ const AdminDashboard: React.FC = () => {
                             placeholder="https://images.unsplash.com/..."
                           />
                         </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">SKU</label>
-                        <input 
-                          type="text" 
-                          value={newProduct.sku}
-                          onChange={(e) => setNewProduct({...newProduct, sku: e.target.value})}
-                          className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-[5px] text-sm outline-none focus:border-brand"
-                          placeholder="BL-NC-001"
-                        />
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">Description</label>

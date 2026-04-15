@@ -8,12 +8,7 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, user, signOut, isLoading } = useAuth();
   const { cartCount } = useCart();
   
-  // Check if user is admin
-  const isAdmin = isAuthenticated && (
-    user?.role === 'admin' || 
-    user?.email === 'admin@Glam.com' ||
-    user?.email === 'admin@bliss.com'
-  );
+  const isAdmin = isAuthenticated && user?.role === 'admin';
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
@@ -50,7 +45,15 @@ const Navbar: React.FC = () => {
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          <div className="flex-shrink-0 flex items-center">
+          {/* Left: Navigation Links */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/about" className="text-stone-600 hover:text-[#C24458] uppercase tracking-widest text-[11px] font-semibold">About Us</Link>
+            <Link to="/shop" className="text-stone-600 hover:text-[#C24458] uppercase tracking-widest text-[11px] font-semibold">All Products</Link>
+            <Link to="/" className="text-stone-600 hover:text-[#C24458] uppercase tracking-widest text-[11px] font-semibold">Home</Link>
+          </div>
+
+          {/* Center: Logo */}
+          <div className="flex-shrink-0 flex items-center absolute left-1/2 -translate-x-1/2">
             <Link to="/" className="flex items-center">
               <img 
                 src="/logo.svg" 
@@ -61,18 +64,13 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex space-x-10 absolute left-1/2 -translate-x-1/2">
-            <Link to="/" className="text-stone-600 hover:text-[#C24458] uppercase tracking-widest text-[11px] font-semibold">Home</Link>
-            <Link to="/shop" className="text-stone-600 hover:text-[#C24458] uppercase tracking-widest text-[11px] font-semibold">Shop</Link>
-            <Link to="/about" className="text-stone-600 hover:text-[#C24458] uppercase tracking-widest text-[11px] font-semibold">About</Link>
-          </div>
-
+          {/* Right: Icons */}
           <div className="flex items-center space-x-6">
             <button onClick={() => setIsSearchOpen(!isSearchOpen)} className="text-stone-600 hover:text-[#C24458] p-1">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </button>
             
-            {/* Account dropdown - shows based on auth state */}
+            {/* Account dropdown */}
             <div className="relative" ref={accountMenuRef}>
               {isLoading ? (
                 <div className="w-5 h-5 animate-pulse bg-stone-200 rounded-full" />
@@ -92,7 +90,6 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
 
-              {/* Account dropdown menu */}
               {isAccountMenuOpen && isAuthenticated && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-stone-200 rounded-[5px] shadow-lg py-2">
                   <div className="px-4 py-2 border-b border-stone-100">
