@@ -181,18 +181,12 @@ const Login: React.FC = () => {
 
         <div className="mt-8 pt-8 border-t border-stone-100 text-center">
           <p className="text-stone-500 text-sm mb-4">Don't have an account?</p>
-          <button 
-            onClick={(e) => {
-              if (isRegistering || isLoading) return;
-              setIsRegistering(true);
-              handleSubmit(e as React.FormEvent, true);
-              setTimeout(() => setIsRegistering(false), 3000);
-            }}
-            disabled={isRegistering || isLoading}
-            className="text-brand font-bold uppercase tracking-widest text-xs hover:underline disabled:opacity-50"
+          <Link 
+            to="/register"
+            className="text-brand font-bold uppercase tracking-widest text-xs hover:underline"
           >
-            {isRegistering ? 'Creating...' : 'Create Account'}
-          </button>
+            Create Account
+          </Link>
         </div>
       </motion.div>
     </div>

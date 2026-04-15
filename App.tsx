@@ -8,6 +8,7 @@ import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 
 const ScrollToTop = () => {
@@ -36,6 +37,7 @@ const App: React.FC = () => {
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/wishlist" element={<div className="py-24 text-center h-[70vh] flex flex-col items-center justify-center"><h2 className="text-2xl font-serif">Wishlist</h2><Link to="/shop" className="mt-4 border-b border-[#C24458] text-[#C24458] pb-1 uppercase tracking-widest text-xs font-bold">Back to Shop</Link></div>} />
               <Route path="/about" element={<div className="max-w-3xl mx-auto py-24 px-4 text-center"><h1 className="text-5xl font-serif mb-8 text-[#C24458]">Our Story</h1><p className="text-stone-600 leading-relaxed text-lg">Beautistic Glam.</p></div>} />
