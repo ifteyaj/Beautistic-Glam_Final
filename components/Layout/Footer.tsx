@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16">
           <div className="col-span-1 md:col-span-1">
-            <h2 className="text-2xl font-serif text-white tracking-[0.2em] mb-8">Beautistic Glam</h2>
+            <img src="/logo.svg" alt="Beautistic Glam" className="h-12 mb-8 brightness-0 invert" />
             <p className="text-sm leading-relaxed mb-8">Crafting premium beauty experiences through nature's most potent ingredients and modern science. Luxury skincare for every body.</p>
             <div className="flex space-x-6">
               <a href="#" className="hover:text-brand transition-colors">Instagram</a>
@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="mt-24 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest">
-          <p>© 2024 Beautistic Glam BEAUTY CO. ALL RIGHTS RESERVED.</p>
+          <p>© 2026 Beautistic Glam BEAUTY CO. ALL RIGHTS RESERVED.</p>
           <div className="flex space-x-8 mt-4 md:mt-0">
              <span className="text-brand font-bold">Handcrafted with Care</span>
           </div>

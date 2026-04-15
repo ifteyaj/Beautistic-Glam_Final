@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/Product/ProductCard';
+import { Truck, Heart, Shield, Headphones } from 'lucide-react';
 
 const Home: React.FC = () => {
   const { products, loading, error } = useProducts({ sortBy: 'default' });
@@ -32,20 +33,20 @@ const Home: React.FC = () => {
   return (
     <div className="space-y-24 pb-24">
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center overflow-hidden">
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
         <img 
-          src="/hero.png" 
+          src="/hero-image.jpg" 
           className="absolute inset-0 w-full h-full object-cover"
           alt="Luxury Beauty"
         />
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full ml-auto">
-          <div className="max-w-xl text-white ml-auto pr-8 md:pr-16">
-            <h2 className="text-sm uppercase tracking-[0.2em] mb-4">The Summer Collection</h2>
-            <h1 className="text-6xl md:text-8xl font-serif mb-8 leading-tight">Elevate Your Inner Glow</h1>
+        <div className="absolute inset-0 bg-stone-900/50" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-2xl">
+            <h2 className="text-sm uppercase tracking-[0.2em] mb-4 text-white/80">The Summer Collection</h2>
+            <h1 className="text-5xl md:text-7xl font-serif mb-8 leading-tight text-white">Elevate Your Inner Glow</h1>
             <Link 
               to="/shop" 
-              className="inline-block bg-brand text-white px-8 py-4 uppercase tracking-widest text-xs hover:bg-brand-hover transition-all duration-300 rounded-[5px]"
+              className="inline-block bg-white text-stone-900 px-10 py-4 uppercase tracking-widest text-xs hover:bg-stone-100 transition-all duration-300 rounded-[5px] font-bold"
             >
               Explore Collection
             </Link>
@@ -73,7 +74,7 @@ const Home: React.FC = () => {
             </div>
           </div>
           <div className="relative h-96 group overflow-hidden rounded-[5px]">
-            <img src="https://images.unsplash.com/photo-1552046122-03184de85e08?q=80&w=800&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Body" />
+            <img src="/images/categories/Body Essentials.jpg" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Body" />
              <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-brand/40 transition-colors" />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
               <h3 className="text-3xl font-serif mb-4">Body Essentials</h3>
@@ -126,41 +127,53 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="border border-stone-200 py-24 text-center bg-white rounded-[5px]">
-          <h2 className="text-xs uppercase tracking-[0.2em] mb-6 text-brand font-bold">Stay Inspired</h2>
-          <h3 className="text-4xl font-serif mb-8 text-stone-900">Join our newsletter</h3>
-          <p className="text-stone-500 mb-12 max-w-lg mx-auto">Get beauty tips, exclusive offers and early access to new product launches delivered to your inbox.</p>
-          <form className="max-w-md mx-auto flex gap-4">
-            <input 
-              type="email" 
-              placeholder="Your email address" 
-              className="flex-1 bg-transparent border-2 border-stone-200 rounded-[5px] py-3 px-6 outline-none text-stone-900 placeholder-stone-400 focus:border-brand transition-all"
-            />
-            <button className="bg-brand text-white px-8 py-3 text-xs uppercase tracking-widest rounded-[5px] hover:bg-brand-hover transition-colors font-bold">
-              Subscribe
-            </button>
-          </form>
+      {/* Newsletter with full width background image */}
+      <section className="relative py-24">
+        <img 
+          src="/images/categories/face care.jpg" 
+          className="absolute inset-0 w-full h-full object-cover"
+          alt="Newsletter background"
+        />
+        <div className="absolute inset-0 bg-stone-900/70" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-2xl mx-auto py-16 px-8">
+            <h2 className="text-xs uppercase tracking-[0.2em] mb-6 text-white font-bold">Stay Inspired</h2>
+            <h3 className="text-4xl font-serif mb-8 text-white">Join our newsletter</h3>
+            <p className="text-stone-200 mb-12 max-w-lg mx-auto">Get beauty tips, exclusive offers and early access to new product launches delivered to your inbox.</p>
+            <form className="max-w-md mx-auto flex gap-4">
+              <input 
+                type="email" 
+                placeholder="Your email address" 
+                className="flex-1 bg-white/90 border-2 border-transparent rounded-[5px] py-3 px-6 outline-none text-stone-900 placeholder-stone-500 focus:border-brand transition-all"
+              />
+              <button className="bg-brand text-white px-8 py-3 text-xs uppercase tracking-widest rounded-[5px] hover:bg-brand-hover transition-colors font-bold">
+                Subscribe
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
-      {/* Trust Badges */}
+      {/* Trust Badges with Icons */}
       <section className="bg-white border-y border-stone-100 py-16">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="text-center bg-stone-50 p-6 rounded-[5px]">
+            <Truck className="w-8 h-8 mx-auto mb-4 text-brand" />
             <h4 className="text-[10px] uppercase tracking-[0.15em] text-brand mb-2 font-bold">Shipping</h4>
             <p className="text-sm font-medium">Free Worldwide Delivery</p>
           </div>
           <div className="text-center bg-stone-50 p-6 rounded-[5px]">
+            <Heart className="w-8 h-8 mx-auto mb-4 text-brand" />
             <h4 className="text-[10px] uppercase tracking-[0.15em] text-brand mb-2 font-bold">Ethics</h4>
             <p className="text-sm font-medium">100% Cruelty-Free</p>
           </div>
           <div className="text-center bg-stone-50 p-6 rounded-[5px]">
+            <Shield className="w-8 h-8 mx-auto mb-4 text-brand" />
             <h4 className="text-[10px] uppercase tracking-[0.15em] text-brand mb-2 font-bold">Security</h4>
             <p className="text-sm font-medium">Secure Payments</p>
           </div>
           <div className="text-center bg-stone-50 p-6 rounded-[5px]">
+            <Headphones className="w-8 h-8 mx-auto mb-4 text-brand" />
             <h4 className="text-[10px] uppercase tracking-[0.15em] text-brand mb-2 font-bold">Service</h4>
             <p className="text-sm font-medium">24/7 Premium Support</p>
           </div>
