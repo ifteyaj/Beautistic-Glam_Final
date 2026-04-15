@@ -106,7 +106,7 @@ export const useCart = () => {
 
   // Save to localStorage whenever cart changes (for guests)
   useEffect(() => {
-    if (!isAuthenticated && cartItems.length > 0) {
+    if (!isAuthenticated) {
       saveLocalCart(cartItems);
     }
   }, [cartItems, isAuthenticated, saveLocalCart]);
@@ -114,20 +114,23 @@ export const useCart = () => {
   const addToCart = async (product: Product, quantity = 1) => {
     // For guests, use local storage
     if (!isAuthenticated || !user) {
+      let newCartItems: CartItem[];
       const existing = cartItems.find(item => item.product.id === product.id);
       if (existing) {
-        setCartItems(prev => prev.map(item =>
+        newCartItems = cartItems.map(item =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
-        ));
+        );
       } else {
-        setCartItems(prev => [...prev, {
+        newCartItems = [...cartItems, {
           id: `local-${Date.now()}`,
           product,
           quantity,
-        }]);
+        }];
       }
+      setCartItems(newCartItems);
+      saveLocalCart(newCartItems);
       return { success: true };
     }
 
@@ -158,16 +161,19 @@ export const useCart = () => {
     } catch (err: any) {
       console.error('Add to cart error:', err);
       // Fallback to local
+      let newCartItems: CartItem[];
       const existing = cartItems.find(item => item.product.id === product.id);
       if (existing) {
-        setCartItems(prev => prev.map(item =>
+        newCartItems = cartItems.map(item =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
-        ));
+        );
       } else {
-        setCartItems(prev => [...prev, { id: `local-${Date.now()}`, product, quantity }]);
+        newCartItems = [...cartItems, { id: `local-${Date.now()}`, product, quantity }];
       }
+      setCartItems(newCartItems);
+      saveLocalCart(newCartItems);
       return { success: true };
     }
   };
@@ -245,7 +251,7 @@ export const useCart = () => {
     0
   );
 
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = cartItems.length;
 
   return {
     cartItems,
