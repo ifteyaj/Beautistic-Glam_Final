@@ -7,6 +7,13 @@ import { useCart } from '../../hooks/useCart';
 const Navbar: React.FC = () => {
   const { isAuthenticated, user, signOut, isLoading } = useAuth();
   const { cartCount } = useCart();
+  
+  // Check if user is admin
+  const isAdmin = isAuthenticated && (
+    user?.role === 'admin' || 
+    user?.email === 'admin@Glam.com' ||
+    user?.email === 'admin@bliss.com'
+  );
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
@@ -92,6 +99,17 @@ const Navbar: React.FC = () => {
                     <p className="text-sm font-medium text-stone-900">{user?.name || 'User'}</p>
                     <p className="text-xs text-stone-500">{user?.email || ''}</p>
                   </div>
+                  
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="w-full px-4 py-2 text-left text-sm text-stone-600 hover:bg-stone-50 flex items-center gap-2"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  
                   <button
                     onClick={handleSignOut}
                     className="w-full px-4 py-2 text-left text-sm text-stone-600 hover:bg-stone-50 flex items-center gap-2"
