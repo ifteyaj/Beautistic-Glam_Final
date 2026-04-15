@@ -17,10 +17,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      alert('Please sign in to add items to cart');
-      return;
-    }
     await addToCart(product);
   };
 

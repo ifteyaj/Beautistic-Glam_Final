@@ -9,15 +9,45 @@ interface CartItem {
   quantity: number;
 }
 
+const LOCAL_CART_KEY = 'beautistic_cart';
+
 export const useCart = () => {
   const { user, isAuthenticated } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load from localStorage for guests
+  const loadLocalCart = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(LOCAL_CART_KEY);
+      if (stored) {
+        const items = JSON.parse(stored);
+        // Load full product data for local items
+        const localItems: CartItem[] = items.map((item: any, idx: number) => ({
+          id: item.id || `local-${idx}`,
+          product: item.product,
+          quantity: item.quantity,
+        }));
+        setCartItems(localItems);
+      }
+    } catch (e) {
+      console.error('Local cart error:', e);
+    }
+  }, []);
+
+  const saveLocalCart = useCallback((items: CartItem[]) => {
+    try {
+      localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(items));
+    } catch (e) {
+      console.error('Save local cart error:', e);
+    }
+  }, []);
+
   const fetchCart = useCallback(async () => {
+    // For guests, use local storage
     if (!isAuthenticated || !user) {
-      setCartItems([]);
+      loadLocalCart();
       setLoading(false);
       return;
     }
@@ -32,8 +62,9 @@ export const useCart = () => {
         .eq('user_id', user.id);
 
       if (cartError) {
-        console.log('Cart table not available:', cartError.message);
-        setCartItems([]);
+        console.log('Cart DB note:', cartError.message);
+        // Fall back to local cart for logged in users if DB fails
+        loadLocalCart();
         setLoading(false);
         return;
       }
@@ -63,21 +94,44 @@ export const useCart = () => {
       }
     } catch (err) {
       console.error('Cart fetch error:', err);
-      setCartItems([]);
+      loadLocalCart();
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, loadLocalCart]);
 
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
+  // Save to localStorage whenever cart changes (for guests)
+  useEffect(() => {
+    if (!isAuthenticated && cartItems.length > 0) {
+      saveLocalCart(cartItems);
+    }
+  }, [cartItems, isAuthenticated, saveLocalCart]);
+
   const addToCart = async (product: Product, quantity = 1) => {
+    // For guests, use local storage
     if (!isAuthenticated || !user) {
-      return { success: false, error: 'Please sign in to add items to cart' };
+      const existing = cartItems.find(item => item.product.id === product.id);
+      if (existing) {
+        setCartItems(prev => prev.map(item =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        ));
+      } else {
+        setCartItems(prev => [...prev, {
+          id: `local-${Date.now()}`,
+          product,
+          quantity,
+        }]);
+      }
+      return { success: true };
     }
 
+    // For logged in users, use database
     try {
       const { data: existing } = await supabase
         .from('cart_items')
@@ -103,23 +157,56 @@ export const useCart = () => {
       return { success: true };
     } catch (err: any) {
       console.error('Add to cart error:', err);
-      return { success: false, error: 'Failed to add to cart' };
+      // Fallback to local
+      const existing = cartItems.find(item => item.product.id === product.id);
+      if (existing) {
+        setCartItems(prev => prev.map(item =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        ));
+      } else {
+        setCartItems(prev => [...prev, { id: `local-${Date.now()}`, product, quantity }]);
+      }
+      return { success: true };
     }
   };
 
   const removeFromCart = async (cartItemId: string) => {
+    // For local items
+    if (cartItemId.startsWith('local-')) {
+      setCartItems(prev => prev.filter(item => item.id !== cartItemId));
+      if (!isAuthenticated) {
+        saveLocalCart(cartItems.filter(item => item.id !== cartItemId));
+      }
+      return { success: true };
+    }
+
+    // For DB items
     try {
       const { error } = await supabase.from('cart_items').delete().eq('id', cartItemId);
       if (error) throw error;
       await fetchCart();
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: 'Failed to remove' };
+    } catch (err) {
+      // Fallback to local remove
+      setCartItems(prev => prev.filter(item => item.id !== cartItemId));
+      return { success: true };
     }
   };
 
   const updateQuantity = async (cartItemId: string, quantity: number) => {
     if (quantity < 1) return removeFromCart(cartItemId);
+
+    // For local items
+    if (cartItemId.startsWith('local-')) {
+      setCartItems(prev => prev.map(item =>
+        item.id === cartItemId ? { ...item, quantity } : item
+      ));
+      return { success: true };
+    }
+
+    // For DB items
     try {
       const { error } = await supabase
         .from('cart_items')
@@ -128,21 +215,29 @@ export const useCart = () => {
       if (error) throw error;
       await fetchCart();
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: 'Failed to update' };
+    } catch (err) {
+      // Fallback
+      setCartItems(prev => prev.map(item =>
+        item.id === cartItemId ? { ...item, quantity } : item
+      ));
+      return { success: true };
     }
   };
 
   const clearCart = async () => {
-    if (!user) return { success: false };
-    try {
-      const { error } = await supabase.from('cart_items').delete().eq('user_id', user.id);
-      if (error) throw error;
-      setCartItems([]);
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: 'Failed to clear' };
+    // Clear local
+    localStorage.removeItem(LOCAL_CART_KEY);
+    setCartItems([]);
+
+    // Clear DB if logged in
+    if (user) {
+      try {
+        await supabase.from('cart_items').delete().eq('user_id', user.id);
+      } catch (err) {
+        // Ignore
+      }
     }
+    return { success: true };
   };
 
   const cartTotal = cartItems.reduce(
