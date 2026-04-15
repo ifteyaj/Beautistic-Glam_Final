@@ -1,6 +1,7 @@
 -- ============================================
 -- BEAUTISTIC GLAM - DATABASE SETUP
 -- Complete database schema for production
+-- Run this in Supabase SQL Editor
 -- ============================================
 
 -- 1. USERS TABLE (links to auth.users)
@@ -9,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   name TEXT,
-  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')) WITH DEFAULT 'user',
+  role TEXT DEFAULT 'user',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -29,7 +30,6 @@ DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
 CREATE POLICY "Users can update own profile" ON public.users
   FOR UPDATE USING (auth.uid() = id);
 
--- Allow service role to manage users (for admin)
 DROP POLICY IF EXISTS "Service role can manage users" ON public.users;
 CREATE POLICY "Service role can manage users" ON public.users
   FOR ALL USING (auth.role() = 'service_role');
@@ -71,16 +71,13 @@ CREATE POLICY "Service role can manage products" ON public.products
   FOR ALL USING (auth.role() = 'service_role');
 
 
-  WITH CHECK (auth.role() = 'service_role');
-
-
 -- 3. ORDERS TABLE
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'shipped', 'delivered', 'cancelled')),
+  status TEXT DEFAULT 'pending',
   shipping_name TEXT,
   shipping_address TEXT,
   shipping_city TEXT,
@@ -105,8 +102,7 @@ CREATE POLICY "Users can create orders" ON public.orders
 -- Service role can manage all orders
 DROP POLICY IF EXISTS "Service role can manage orders" ON public.orders;
 CREATE POLICY "Service role can manage orders" ON public.orders
-  FOR ALL USING (auth.role() = 'service_role')
-  WITH CHECK (auth.role() = 'service_role');
+  FOR ALL USING (auth.role() = 'service_role');
 
 
 -- 4. ORDER_ITEMS TABLE
@@ -148,8 +144,13 @@ CREATE POLICY "Users can create order items" ON public.order_items
 -- Service role can manage order items
 DROP POLICY IF EXISTS "Service role can manage order items" ON public.order_items;
 CREATE POLICY "Service role can manage order items" ON public.order_items
-  FOR ALL USING (auth.role() = 'service_role')
+  FOR ALL USING (auth.role() = 'service_role');
+
+
   WITH CHECK (auth.role() = 'service_role');
+
+
+);
 
 
 -- 5. CART TABLE (for persistent cart)
@@ -177,17 +178,19 @@ CREATE POLICY "Users can manage own cart" ON public.cart_items
   FOR ALL USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+
 -- 6. SEED PRODUCTS DATA
 -- ============================================
 INSERT INTO public.products (name, brand, price, category, tags, image, description, ingredients, how_to_use, rating, reviews_count, sku, is_new, is_top_seller, stock)
 VALUES 
   ('Luminous Serum', 'ENDYMIONS', 124.00, 'Serum', ARRAY['Organic', 'Fresh', 'Clean'], 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800', 'A revolutionary serum that provides instant radiance and long-term skin rejuvenation.', ARRAY['Vitamin C', 'Hyaluronic Acid', 'Green Tea Extract'], 'Apply 2-3 drops to clean face every morning and evening.', 4.8, 128, 'BL-SR-001', true, true, 100),
   ('Face Elixir', 'NATURAL', 30.00, 'Oil', ARRAY['Natural', 'Clean'], 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=800', 'A lightweight facial oil that deeply hydrates without clogging pores.', ARRAY['Jojoba Oil', 'Argan Oil', 'Squalane'], 'Warm 2 drops in palms and press gently into skin.', 4.5, 85, 'BL-EL-002', true, false, 50),
-  ('Hydrating Cream', 'BEAUTY', 30.00, 'Personal Care', ARRAY['Fresh', 'Clean'], 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=800', 'Intense 24-hour hydration for all skin types.', ARRAY['Shea Butter', 'Ceramides', 'Glycerin'], 'Apply to face and neck morning and night.', 4.9, 210, 'BL-CR-003', false, true, 200),
+  ('Hydrating Cream', 'BEAUTY', 30.00, 'Face', ARRAY['Fresh', 'Clean'], 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=800', 'Intense 24-hour hydration for all skin types.', ARRAY['Shea Butter', 'Ceramides', 'Glycerin'], 'Apply to face and neck morning and night.', 4.9, 210, 'BL-CR-003', false, true, 200),
   ('Velvet Matte Lipstick', 'Beautistic Glam', 32.00, 'Lips', ARRAY['Clean', 'Cruelty-Free'], 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800', 'High-pigment matte lipstick that feels like weightless silk.', ARRAY['Castor Oil', 'Beeswax', 'Vitamin E'], 'Apply directly to lips.', 4.9, 320, 'BL-LP-008', false, true, 150),
   ('Rose Water Toner', 'BEAUTY', 28.00, 'Face', ARRAY['Organic', 'Natural'], 'https://images.unsplash.com/photo-1601049541289-9b1b7bbb43fe?w=800', 'Gentle hydrating toner with pure rose water.', ARRAY['Rose Water', 'Glycerin', 'Aloe Vera'], 'Apply with cotton pad after cleansing.', 4.7, 156, 'BL-TN-005', true, false, 80),
   ('Night Repair Mask', 'ENDYMIONS', 65.00, 'Skincare', ARRAY['Clean', 'Cruelty-Free'], 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800', 'Overnight treatment for deep skin repair.', ARRAY['Retinol', 'Peptides', 'Hyaluronic Acid'], 'Apply thin layer before bed.', 4.8, 89, 'BL-MK-006', false, true, 60)
 ON CONFLICT DO NOTHING;
+
 
 -- ============================================
 -- Verify tables were created
