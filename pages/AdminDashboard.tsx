@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Search, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Search, Trash2, X, Image as ImageIcon, Package, ShoppingCart } from 'lucide-react';
 import { useProducts } from '../hooks/useProducts';
 import { supabase } from '../lib/supabase';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -11,8 +11,11 @@ import type { Product } from '../types';
 import { CATEGORIES } from '../constants';
 
 const AdminDashboard: React.FC = () => {
-  const { user, isAuthenticated, isLoading: authLoading, signOut } = useAuth();
-  const { products, loading, error, refetch } = useProducts({});
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { products, loading: productsLoading, error, refetch } = useProducts({});
+  const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
@@ -28,12 +31,56 @@ const AdminDashboard: React.FC = () => {
     tags: ['Clean']
   });
 
+  // Check if user is admin (either via role or a secret check)
+  const isAdmin = isAuthenticated && (
+    user?.role === 'admin' || 
+    user?.email === 'admin@Glam.com' ||
+    user?.email === 'admin@bliss.com'
+  );
+
+  // Fetch orders when tab is active
+  useEffect(() => {
+    if (activeTab === 'orders' && isAdmin) {
+      fetchOrders();
+    }
+  }, [activeTab, isAdmin]);
+
+  const fetchOrders = async () => {
+    setOrdersLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, order_items(*, products(*))')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Orders note:', error.message);
+        setOrders([]);
+      } else {
+        setOrders(data || []);
+      }
+    } catch (err) {
+      console.error('Orders fetch error:', err);
+      setOrders([]);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
   if (authLoading) {
     return <LoadingSpinner size="lg" className="min-h-screen" />;
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-serif mb-4">Access Denied</h2>
+          <p className="text-stone-500 mb-6">You need admin access to view this page.</p>
+          <Link to="/login" className="text-brand hover:underline">Sign in as admin</Link>
+        </div>
+      </div>
+    );
   }
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -89,7 +136,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  if (loading) return <LoadingSpinner size="lg" className="min-h-screen" />;
+  if (productsLoading) return <LoadingSpinner size="lg" className="min-h-screen" />;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
 
   return (
@@ -111,6 +158,25 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex gap-1 mb-6 bg-stone-100 p-1 rounded-[5px] w-fit">
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-6 py-2 rounded-[3px] text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'products' ? 'bg-white text-brand shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+          >
+            <Package className="w-4 h-4" />
+            Products
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-6 py-2 rounded-[3px] text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'orders' ? 'bg-white text-brand shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Orders
+          </button>
+        </div>
+
+        {activeTab === 'products' && (
         <div className="grid grid-cols-1 gap-8">
           <div className="space-y-8">
             <div className="bg-white rounded-[5px] border border-stone-100 shadow-sm overflow-hidden">
@@ -170,6 +236,67 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+        <div className="bg-white rounded-[5px] border border-stone-100 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-stone-100">
+            <h3 className="text-lg font-serif">Order Management</h3>
+            <p className="text-xs text-stone-400 mt-1">{orders.length} total orders</p>
+          </div>
+          
+          {ordersLoading ? (
+            <div className="p-12 text-center">
+              <LoadingSpinner />
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="p-12 text-center text-stone-400">
+              <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p>No orders yet</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                  <tr>
+                    <th className="px-6 py-4">Order ID</th>
+                    <th className="px-6 py-4">Customer</th>
+                    <th className="px-6 py-4">Items</th>
+                    <th className="px-6 py-4">Total</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm divide-y divide-stone-50">
+                  {orders.map((order) => (
+                    <tr key={order.id} className="hover:bg-stone-50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-xs">{order.id.slice(0, 8)}...</td>
+                      <td className="px-6 py-4">{order.user_id?.slice(0, 8) || 'Guest'}</td>
+                      <td className="px-6 py-4">{order.order_items?.length || 0} items</td>
+                      <td className="px-6 py-4 font-medium">${order.total_price?.toFixed(2) || '0.00'}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'paid' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'shipped' ? 'bg-purple-100 text-purple-700' :
+                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          'bg-stone-100 text-stone-700'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-stone-400">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        )}
       </div>
 
       <AnimatePresence>
