@@ -12,7 +12,7 @@ interface CartItem {
 export const useCart = () => {
   const { user, isAuthenticated } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCart = useCallback(async () => {
@@ -24,44 +24,50 @@ export const useCart = () => {
 
     try {
       setLoading(true);
-      setError(null);
 
+      // Try database first
       const { data: cartData, error: cartError } = await supabase
-        .from('cart')
+        .from('cart_items')
         .select('*')
-        .eq('userId', user.id);
+        .eq('user_id', user.id);
 
-      if (cartError) throw cartError;
+      if (cartError) {
+        console.log('Cart table not available:', cartError.message);
+        setCartItems([]);
+        setLoading(false);
+        return;
+      }
 
       if (cartData && cartData.length > 0) {
-        const productIds = cartData.map(item => item.productId);
-        
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', productIds);
-
-        if (productsError) throw productsError;
-
-        const itemsWithProducts = cartData.map(cartItem => {
-          const product = productsData?.find(p => p.id === cartItem.productId);
-          return {
-            ...cartItem,
-            product: product as Product,
-          };
-        }).filter(item => item.product);
-
-        setCartItems(itemsWithProducts);
+        const itemsWithProducts = await Promise.all(
+          cartData.map(async (item: any) => {
+            try {
+              const { data: product } = await supabase
+                .from('products')
+                .select('*')
+                .eq('id', item.product_id)
+                .single();
+              return {
+                id: item.id,
+                product: product as Product,
+                quantity: item.quantity,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+        setCartItems(itemsWithProducts.filter((i): i is CartItem => i !== null && !!i.product));
       } else {
         setCartItems([]);
       }
-    } catch (err: any) {
-      console.error('Error fetching cart:', err);
-      setError(err.message || 'Failed to fetch cart');
+    } catch (err) {
+      console.error('Cart fetch error:', err);
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
-  }, [user, isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     fetchCart();
@@ -73,97 +79,69 @@ export const useCart = () => {
     }
 
     try {
-      // Check if item already in cart
-      const { data: existingItem } = await supabase
-        .from('cart')
+      const { data: existing } = await supabase
+        .from('cart_items')
         .select('*')
-        .eq('userId', user.id)
-        .eq('productId', product.id)
+        .eq('user_id', user.id)
+        .eq('product_id', product.id)
         .single();
 
-      if (existingItem) {
-        // Update quantity
-        const { error: updateError } = await supabase
-          .from('cart')
-          .update({ quantity: existingItem.quantity + quantity })
-          .eq('id', existingItem.id);
-
-        if (updateError) throw updateError;
+      if (existing) {
+        const { error } = await supabase
+          .from('cart_items')
+          .update({ quantity: existing.quantity + quantity })
+          .eq('id', existing.id);
+        if (error) throw error;
       } else {
-        // Insert new item
-        const { error: insertError } = await supabase
-          .from('cart')
-          .insert({
-            userId: user.id,
-            productId: product.id,
-            quantity,
-          });
-
-        if (insertError) throw insertError;
+        const { error } = await supabase
+          .from('cart_items')
+          .insert({ user_id: user.id, product_id: product.id, quantity });
+        if (error) throw error;
       }
 
       await fetchCart();
       return { success: true };
     } catch (err: any) {
-      console.error('Error adding to cart:', err);
-      return { success: false, error: err.message || 'Failed to add to cart' };
+      console.error('Add to cart error:', err);
+      return { success: false, error: 'Failed to add to cart' };
     }
   };
 
   const removeFromCart = async (cartItemId: string) => {
     try {
-      const { error: deleteError } = await supabase
-        .from('cart')
-        .delete()
-        .eq('id', cartItemId);
-
-      if (deleteError) throw deleteError;
-
+      const { error } = await supabase.from('cart_items').delete().eq('id', cartItemId);
+      if (error) throw error;
       await fetchCart();
       return { success: true };
     } catch (err: any) {
-      console.error('Error removing from cart:', err);
-      return { success: false, error: err.message || 'Failed to remove from cart' };
+      return { success: false, error: 'Failed to remove' };
     }
   };
 
   const updateQuantity = async (cartItemId: string, quantity: number) => {
-    if (quantity < 1) {
-      return removeFromCart(cartItemId);
-    }
-
+    if (quantity < 1) return removeFromCart(cartItemId);
     try {
-      const { error: updateError } = await supabase
-        .from('cart')
+      const { error } = await supabase
+        .from('cart_items')
         .update({ quantity })
         .eq('id', cartItemId);
-
-      if (updateError) throw updateError;
-
+      if (error) throw error;
       await fetchCart();
       return { success: true };
     } catch (err: any) {
-      console.error('Error updating quantity:', err);
-      return { success: false, error: err.message || 'Failed to update quantity' };
+      return { success: false, error: 'Failed to update' };
     }
   };
 
   const clearCart = async () => {
-    if (!user) return;
-
+    if (!user) return { success: false };
     try {
-      const { error: deleteError } = await supabase
-        .from('cart')
-        .delete()
-        .eq('userId', user.id);
-
-      if (deleteError) throw deleteError;
-
+      const { error } = await supabase.from('cart_items').delete().eq('user_id', user.id);
+      if (error) throw error;
       setCartItems([]);
       return { success: true };
-    } catch (err: any) {
-      console.error('Error clearing cart:', err);
-      return { success: false, error: err.message || 'Failed to clear cart' };
+    } catch (err) {
+      return { success: false, error: 'Failed to clear' };
     }
   };
 

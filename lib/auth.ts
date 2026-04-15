@@ -41,6 +41,16 @@ export const authService = {
 
       console.log('[Auth] Signup response:', data);
 
+      // Note: confirmation_sent is returned when email confirmation is enabled
+      // @ts-ignore - Supabase type definition issue
+      if (data?.confirmation_sent === true) {
+        return { 
+          success: true, 
+          needsConfirmation: true,
+          message: 'Please check your email to confirm your account' 
+        };
+      }
+
       if (data?.user) {
         console.log('[Auth] User created:', data.user.id);
 
@@ -54,14 +64,6 @@ export const authService = {
         } catch (profileError: any) {
           console.warn('[Auth] Profile note:', profileError.message);
         }
-      }
-
-      if (data?.confirmation_sent === true) {
-        return { 
-          success: true, 
-          needsConfirmation: true,
-          message: 'Please check your email to confirm your account' 
-        };
       }
 
       return { success: true, user: data.user };
