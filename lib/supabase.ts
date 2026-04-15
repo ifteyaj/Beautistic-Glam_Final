@@ -13,8 +13,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    // @ts-ignore - TypeScript issue with detection
-    flowType: 'pkce',
     detectSessionInUrl: true,
   },
 });
