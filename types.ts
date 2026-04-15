@@ -19,17 +19,20 @@ export interface Product {
   name: string;
   brand: string;
   price: number;
-  category: Category;
+  category: string;
   tags: string[];
   image: string;
-  description: string;
-  ingredients: string[];
-  howToUse: string;
-  rating: number;
-  reviewsCount: number;
-  sku: string;
+  description?: string;
+  ingredients?: string[];
+  howToUse?: string;
+  rating?: number;
+  reviewsCount?: number;
+  sku?: string;
   isNew?: boolean;
   isTopSeller?: boolean;
+  isActive?: boolean;
+  stock?: number;
+  createdAt?: string;
 }
 
 export interface CartItem extends Product {
