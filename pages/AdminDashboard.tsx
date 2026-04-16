@@ -444,74 +444,70 @@ const AdminDashboard: React.FC = () => {
                     <div className="space-y-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">Image *</label>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            try {
-                              const { data } = await storage.from('Product_Image').list();
-                              console.log('Storage buckets:', data);
-                            } catch(e) {
-                              console.log('Storage error:', e);
-                            }
-                          }}
-                          className="text-xs text-stone-400 mb-2"
-                        >
-                          Test Storage
-                        </button>
-                        <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-[5px] text-sm cursor-pointer hover:bg-stone-100 transition-colors">
-                            <ImageIcon className="w-4 h-4" />
-                            {imageUploading ? 'Uploading...' : 'Choose Image'}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              disabled={imageUploading}
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                
-                                setImageUploading(true);
-                                try {
-                                  console.log('Starting upload...');
-                                  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                                  console.log('File name:', fileName);
+                        <div className="flex flex-col gap-3">
+                          {newProduct.image ? (
+                            <div className="relative group">
+                              <img src={newProduct.image} alt="Preview" className="w-32 h-32 object-cover rounded-[5px] border" />
+                              <button
+                                type="button"
+                                onClick={() => setNewProduct({ ...newProduct, image: '' })}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="flex items-center justify-center gap-2 px-4 py-8 bg-stone-50 border-2 border-dashed border-stone-200 rounded-[5px] text-sm cursor-pointer hover:border-brand hover:bg-brand/5 transition-colors">
+                              <ImageIcon className="w-5 h-5 text-stone-400" />
+                              {imageUploading ? (
+                                <span className="text-brand">Uploading...</span>
+                              ) : (
+                                <>
+                                  <span className="text-stone-500">Drop image here or</span>
+                                  <span className="text-brand font-bold">Browse</span>
+                                </>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={imageUploading}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
                                   
-                                  const { data, error } = await storage
-                                    .from('Product_Image')
-                                    .upload(fileName, file);
-                                
-                                  console.log('Upload result:', { data, error });
-                                  
-                                  if (error) {
-                                    alert(`Upload failed: ${error.message}`);
-                                    throw error;
+                                  setImageUploading(true);
+                                  try {
+                                    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+                                    const { data, error } = await storage
+                                      .from('Product_Image')
+                                      .upload(fileName, file);
+                                    
+                                    if (error) throw error;
+                                    
+                                    const { data: urlData } = storage
+                                      .from('Product_Image')
+                                      .getPublicUrl(fileName);
+                                    
+                                    setNewProduct({ ...newProduct, image: urlData.publicUrl });
+                                  } catch (err: any) {
+                                    console.error('Upload error:', err);
+                                    alert('Failed to upload image: ' + (err?.message || 'Storage not configured'));
+                                  } finally {
+                                    setImageUploading(false);
                                   }
-                                  
-                                  const { data: urlData } = storage
-                                    .from('Product_Image')
-                                    .getPublicUrl(fileName);
-                                
-                                  console.log('Public URL:', urlData.publicUrl);
-                                  setNewProduct({ ...newProduct, image: urlData.publicUrl });
-                                } catch (err: any) {
-                                  console.error('Full upload error:', err);
-                                  alert('Failed to upload image: ' + (err?.message || err));
-                                } finally {
-                                  setImageUploading(false);
-                                }
-                              }}
-                            />
-                          </label>
-                          {newProduct.image && (
-                            <span className="text-xs text-stone-500 truncate max-w-[200px]">
-                              {newProduct.image.split('/').pop()}
-                            </span>
+                                }}
+                              />
+                            </label>
                           )}
+                          <input
+                            type="url"
+                            value={newProduct.image}
+                            onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                            className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-[5px] text-sm outline-none focus:border-brand"
+                            placeholder="Or paste image URL"
+                          />
                         </div>
-                        {newProduct.image && (
-                          <img src={newProduct.image} alt="Preview" className="mt-2 w-24 h-24 object-cover rounded-[5px] border" />
-                        )}
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">Description</label>
