@@ -7,11 +7,11 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-stone-900 text-stone-400 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Brand Column */}
           <div className="flex flex-col items-start">
-            <img src="/logo.svg" alt="Beautistic Glam" className="h-10 mb-6 brightness-0 invert" />
-            <p className="text-sm leading-relaxed mb-6">Crafting premium beauty experiences through nature's most potent ingredients and modern science.</p>
+            <img src="/logo.svg" alt="Beautistic Glam" className="h-10 mb-8 brightness-0 invert" />
+            <p className="text-sm leading-relaxed mb-4">Crafting premium beauty experiences through nature's most potent ingredients and modern science.</p>
             <div className="flex items-center gap-4">
               <a href="https://www.instagram.com/beautisticglam?igsh=ZDV0dmtkcmp1dHls" target="_blank" rel="noopener noreferrer" className="hover:text-brand transition-colors text-sm">Instagram</a>
               <a href="https://www.facebook.com/profile.php?id=61576665968495" target="_blank" rel="noopener noreferrer" className="hover:text-brand transition-colors text-sm">Facebook</a>
