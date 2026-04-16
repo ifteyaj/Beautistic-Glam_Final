@@ -128,7 +128,6 @@ export const productService = {
    */
   async createProduct(product: ProductInput) {
     try {
-      // Validate required fields
       if (!product.name?.trim()) {
         return { success: false, error: 'Product name is required' };
       }
@@ -145,7 +144,7 @@ export const productService = {
         return { success: false, error: 'Image URL is required' };
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('products')
         .insert({
           name: product.name.trim(),
@@ -164,12 +163,26 @@ export const productService = {
           is_top_seller: product.isTopSeller || false,
           stock: product.stock || 100,
           is_active: product.isActive !== false,
-        })
-        .select()
-        .single();
+        });
 
       if (error) throw error;
-      return { success: true, product: data as Product };
+      
+      return { success: true, product: {
+        id: '',
+        name: product.name.trim(),
+        brand: product.brand.trim(),
+        price: product.price,
+        category: product.category,
+        tags: product.tags || [],
+        image: product.image,
+        description: product.description || '',
+        ingredients: product.ingredients || [],
+        howToUse: product.howToUse || '',
+        rating: product.rating || 0,
+        reviewsCount: product.reviewsCount || 0,
+        sku: product.sku || '',
+        isActive: product.isActive !== false,
+      } as Product };
     } catch (error: any) {
       console.error('Create product error:', error);
       return { success: false, error: error.message };
