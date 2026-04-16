@@ -17,7 +17,6 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const About = lazy(() => import('./pages/About'));
-const Sustainability = lazy(() => import('./pages/Sustainability'));
 const Contact = lazy(() => import('./pages/Contact'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 const Privacy = lazy(() => import('./pages/Privacy'));
@@ -56,7 +55,6 @@ const App: React.FC = () => {
                 <Route path="/admin" element={<ProtectedRoute requireAdmin>{<AdminDashboard />}</ProtectedRoute>} />
                 <Route path="/wishlist" element={<div className="py-24 text-center h-[70vh] flex flex-col items-center justify-center"><h2 className="text-2xl font-serif">Wishlist</h2><Link to="/shop" className="mt-4 border-b border-[#C24458] text-[#C24458] pb-1 uppercase tracking-widest text-xs font-bold">Back to Shop</Link></div>} />
                 <Route path="/about" element={<About />} />
-                <Route path="/ethics" element={<Sustainability />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/privacy" element={<Privacy />} />

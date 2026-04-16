@@ -20,7 +20,12 @@ export const useProducts = (options: UseProductsOptions = {}) => {
       setLoading(true);
       setError(null);
 
-      const result = await productService.getProducts(options);
+      const result = await Promise.race([
+        productService.getProducts(options),
+        new Promise<{ success: false; error: string; products: [] }>((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 10000)
+        )
+      ]);
 
       if (!result.success) {
         setError(result.error || 'Failed to load products');
@@ -30,7 +35,7 @@ export const useProducts = (options: UseProductsOptions = {}) => {
       }
     } catch (err: any) {
       console.error('Error fetching products:', err);
-      setError(err.message || 'Failed to load products');
+      setError(err.message || 'Failed to load products. Please check your connection.');
       setProducts([]);
     } finally {
       setLoading(false);
