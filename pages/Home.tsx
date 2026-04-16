@@ -23,17 +23,35 @@ const Home: React.FC = () => {
       }).slice(0, 4);
 
   if (loading) {
-    return <div className="min-h-[50vh] flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-4 border-stone-200 border-t-brand rounded-full animate-spin" />
+        <p className="text-stone-500 text-sm uppercase tracking-widest">Loading products...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="py-24 text-center"><p className="text-red-600">Error: {error}</p></div>;
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6 px-4">
+        <div className="text-center">
+          <p className="text-red-500 mb-2">⚠️ {error}</p>
+          <p className="text-stone-500 text-sm">Please check your connection and try again.</p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-brand text-white px-6 py-3 rounded-[5px] text-xs font-bold uppercase tracking-widest hover:bg-brand-hover transition-colors"
+        >
+          Refresh Page
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-24 pb-24">
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden -mt-16 sm:-mt-20">
         <img 
           src="/hero-image.jpg" 
           className="absolute inset-0 w-full h-full object-cover"

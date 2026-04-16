@@ -33,13 +33,6 @@ const ProductDetail: React.FC = () => {
 
   const isWishlisted = wishlist.includes(product.id);
 
-  const secondaryImages = [
-    product.image,
-    `https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80&w=600&auto=format&fit=crop`,
-    `https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=600&auto=format&fit=crop`,
-    `https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=600&auto=format&fit=crop`
-  ];
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
       <div className="flex flex-col lg:flex-row gap-16">
@@ -53,13 +46,6 @@ const ProductDetail: React.FC = () => {
             />
             <div className="absolute inset-0 bg-brand/0 hover:bg-brand/5 transition-colors cursor-zoom-in" />
           </div>
-          <div className="grid grid-cols-4 gap-4 mt-4">
-            {secondaryImages.map((img, idx) => (
-              <div key={idx} className="aspect-square bg-stone-100 overflow-hidden cursor-pointer hover:border-brand border-2 border-transparent transition-all rounded-[5px]">
-                <img src={img} className="w-full h-full object-cover" alt={`thumb-${idx}`} />
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Info */}
@@ -67,8 +53,6 @@ const ProductDetail: React.FC = () => {
           <div>
             <div className="flex items-center gap-4 mb-4">
               <p className="text-[10px] text-brand uppercase tracking-[0.3em] font-bold">{product.brand}</p>
-              <span className="w-1.5 h-1.5 rounded-full bg-stone-200" />
-              <p className="text-[10px] text-stone-400 uppercase tracking-[0.3em]">SKU: {product.sku}</p>
             </div>
             <h1 className="text-6xl md:text-7xl font-serif text-stone-900 mb-6 leading-[1.1]">{product.name}</h1>
             <div className="flex items-center gap-4 mb-8">
@@ -79,7 +63,7 @@ const ProductDetail: React.FC = () => {
               </div>
               <span className="text-sm text-stone-400">({product.reviewsCount} Reviews)</span>
             </div>
-            <p className="text-4xl font-serif text-brand font-bold">${product.price.toFixed(2)}</p>
+            <p className="text-6xl font-serif text-brand font-bold">${product.price.toFixed(2)}</p>
           </div>
 
           <p className="text-stone-600 leading-relaxed text-lg">{product.description}</p>

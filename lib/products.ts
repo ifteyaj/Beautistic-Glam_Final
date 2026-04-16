@@ -124,7 +124,7 @@ export const productService = {
   },
 
   /**
-   * Create new product (admin only)
+   * Create new product (admin only) - with timeout
    */
   async createProduct(product: ProductInput) {
     try {
@@ -144,31 +144,11 @@ export const productService = {
         return { success: false, error: 'Image URL is required' };
       }
 
-      const { error } = await supabase
-        .from('products')
-        .insert({
-          name: product.name.trim(),
-          brand: product.brand.trim(),
-          price: product.price,
-          category: product.category,
-          tags: product.tags || [],
-          image: product.image,
-          description: product.description || '',
-          ingredients: product.ingredients || [],
-          how_to_use: product.howToUse || '',
-          rating: product.rating || 0,
-          reviews_count: product.reviewsCount || 0,
-          sku: product.sku || '',
-          is_new: product.isNew || false,
-          is_top_seller: product.isTopSeller || false,
-          stock: product.stock || 100,
-          is_active: product.isActive !== false,
-        });
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-      if (error) throw error;
-      
-      return { success: true, product: {
-        id: '',
+      const insertData = {
         name: product.name.trim(),
         brand: product.brand.trim(),
         price: product.price,
@@ -177,15 +157,43 @@ export const productService = {
         image: product.image,
         description: product.description || '',
         ingredients: product.ingredients || [],
-        howToUse: product.howToUse || '',
+        how_to_use: product.howToUse || '',
         rating: product.rating || 0,
-        reviewsCount: product.reviewsCount || 0,
+        reviews_count: product.reviewsCount || 0,
         sku: product.sku || '',
-        isActive: product.isActive !== false,
-      } as Product };
+        is_new: product.isNew || false,
+        is_top_seller: product.isTopSeller || false,
+        stock: product.stock || 100,
+        is_active: product.isActive !== false,
+      };
+
+      const { data, error } = await supabase
+        .from('products')
+        .insert(insertData)
+        .select()
+        .single();
+
+      clearTimeout(timeoutId);
+
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw new Error(error.message || 'Failed to create product');
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from insert');
+      }
+      
+      return { success: true, product: data as Product };
     } catch (error: any) {
+      // Handle timeout specifically
+      if (error.name === 'AbortError' || error.message?.includes('aborted')) {
+        console.error('Create product timeout');
+        return { success: false, error: 'Request timed out. Please try again.' };
+      }
+      
       console.error('Create product error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || 'Failed to create product' };
     }
   },
 

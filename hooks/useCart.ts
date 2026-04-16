@@ -134,100 +134,83 @@ export const useCart = () => {
       return { success: true };
     }
 
-    // For logged in users, use database
-    try {
-      const { data: existing } = await supabase
-        .from('cart_items')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('product_id', product.id)
-        .single();
+    // For logged in users - update UI immediately, then sync with DB
+    const existingItem = cartItems.find(item => item.product?.id === product.id);
+    let newCartItems: CartItem[];
+    
+    if (existingItem) {
+      newCartItems = cartItems.map(item =>
+        item.product?.id === product.id
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      );
+    } else {
+      newCartItems = [...cartItems, { id: `db-${Date.now()}`, product, quantity }];
+    }
+    
+    // Update UI immediately for instant feedback
+    setCartItems(newCartItems);
 
-      if (existing) {
-        const { error } = await supabase
+    // Sync with database in background
+    try {
+      if (existingItem && !existingItem.id.startsWith('local-') && !existingItem.id.startsWith('db-')) {
+        await supabase
           .from('cart_items')
-          .update({ quantity: existing.quantity + quantity })
-          .eq('id', existing.id);
-        if (error) throw error;
+          .update({ quantity: existingItem.quantity + quantity })
+          .eq('id', existingItem.id);
       } else {
-        const { error } = await supabase
+        await supabase
           .from('cart_items')
           .insert({ user_id: user.id, product_id: product.id, quantity });
-        if (error) throw error;
       }
-
-      await fetchCart();
-      return { success: true };
-    } catch (err: any) {
-      console.error('Add to cart error:', err);
-      // Fallback to local
-      let newCartItems: CartItem[];
-      const existing = cartItems.find(item => item.product.id === product.id);
-      if (existing) {
-        newCartItems = cartItems.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      } else {
-        newCartItems = [...cartItems, { id: `local-${Date.now()}`, product, quantity }];
-      }
-      setCartItems(newCartItems);
-      saveLocalCart(newCartItems);
-      return { success: true };
+      // Refresh to get correct IDs
+      fetchCart();
+    } catch (err) {
+      console.error('Add to cart sync error:', err);
     }
+    
+    return { success: true };
   };
 
   const removeFromCart = async (cartItemId: string) => {
-    // For local items
-    if (cartItemId.startsWith('local-')) {
-      setCartItems(prev => prev.filter(item => item.id !== cartItemId));
-      if (!isAuthenticated) {
-        saveLocalCart(cartItems.filter(item => item.id !== cartItemId));
+    // Update UI immediately
+    setCartItems(prev => prev.filter(item => item.id !== cartItemId));
+    
+    // Sync with database in background
+    if (!cartItemId.startsWith('local-') && !cartItemId.startsWith('db-')) {
+      try {
+        await supabase.from('cart_items').delete().eq('id', cartItemId);
+      } catch (err) {
+        console.error('Remove from cart sync error:', err);
       }
-      return { success: true };
+    } else if (!isAuthenticated) {
+      saveLocalCart(cartItems.filter(item => item.id !== cartItemId));
     }
-
-    // For DB items
-    try {
-      const { error } = await supabase.from('cart_items').delete().eq('id', cartItemId);
-      if (error) throw error;
-      await fetchCart();
-      return { success: true };
-    } catch (err) {
-      // Fallback to local remove
-      setCartItems(prev => prev.filter(item => item.id !== cartItemId));
-      return { success: true };
-    }
+    
+    return { success: true };
   };
 
   const updateQuantity = async (cartItemId: string, quantity: number) => {
     if (quantity < 1) return removeFromCart(cartItemId);
 
-    // For local items
-    if (cartItemId.startsWith('local-')) {
-      setCartItems(prev => prev.map(item =>
-        item.id === cartItemId ? { ...item, quantity } : item
-      ));
-      return { success: true };
-    }
+    // Update UI immediately
+    setCartItems(prev => prev.map(item =>
+      item.id === cartItemId ? { ...item, quantity } : item
+    ));
 
-    // For DB items
-    try {
-      const { error } = await supabase
-        .from('cart_items')
-        .update({ quantity })
-        .eq('id', cartItemId);
-      if (error) throw error;
-      await fetchCart();
-      return { success: true };
-    } catch (err) {
-      // Fallback
-      setCartItems(prev => prev.map(item =>
-        item.id === cartItemId ? { ...item, quantity } : item
-      ));
-      return { success: true };
+    // Sync with database in background
+    if (!cartItemId.startsWith('local-') && !cartItemId.startsWith('db-')) {
+      try {
+        await supabase
+          .from('cart_items')
+          .update({ quantity })
+          .eq('id', cartItemId);
+      } catch (err) {
+        console.error('Update quantity sync error:', err);
+      }
     }
+    
+    return { success: true };
   };
 
   const clearCart = async () => {
@@ -251,7 +234,10 @@ export const useCart = () => {
     0
   );
 
-  const cartCount = cartItems.length;
+  const cartCount = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   return {
     cartItems,

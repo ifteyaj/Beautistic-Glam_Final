@@ -5,6 +5,7 @@ import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
 import { LoadingPage } from './components/LoadingSpinner';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -14,6 +15,7 @@ const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 const Login = lazy(() => import('./pages/Login'));
+const Orders = lazy(() => import('./pages/Orders'));
 const Register = lazy(() => import('./pages/Register'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const About = lazy(() => import('./pages/About'));
@@ -41,9 +43,10 @@ const App: React.FC = () => {
         <ScrollToTop />
         <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow">
-            <Suspense fallback={<LoadingPage />}>
-              <Routes>
+          <main className="flex-grow pt-16 sm:pt-20">
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingPage />}>
+                <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
@@ -54,6 +57,7 @@ const App: React.FC = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/admin" element={<ProtectedRoute requireAdmin>{<AdminDashboard />}</ProtectedRoute>} />
                 <Route path="/wishlist" element={<div className="py-24 text-center h-[70vh] flex flex-col items-center justify-center"><h2 className="text-2xl font-serif">Wishlist</h2><Link to="/shop" className="mt-4 border-b border-[#C24458] text-[#C24458] pb-1 uppercase tracking-widest text-xs font-bold">Back to Shop</Link></div>} />
+                <Route path="/orders" element={<Orders />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/faq" element={<FAQ />} />
@@ -62,6 +66,7 @@ const App: React.FC = () => {
                 <Route path="*" element={<Home />} />
               </Routes>
             </Suspense>
+            </ErrorBoundary>
           </main>
           <Footer />
         </div>

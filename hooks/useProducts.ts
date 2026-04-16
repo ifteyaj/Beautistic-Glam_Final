@@ -22,7 +22,7 @@ export const useProducts = (options: UseProductsOptions = {}) => {
 
       const fetchPromise = productService.getProducts(options);
       const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - Supabase may be paused')), 15000)
+        setTimeout(() => reject(new Error('Connection timed out. Please check your internet.')), 5000)
       );
 
       const result = await Promise.race([fetchPromise, timeoutPromise]);
@@ -72,7 +72,7 @@ export const useProduct = (productId: string) => {
 
       const fetchPromise = productService.getProduct(productId);
       const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - Supabase may be paused')), 15000)
+        setTimeout(() => reject(new Error('Connection timed out. Please check your internet.')), 5000)
       );
 
       const result = await Promise.race([fetchPromise, timeoutPromise]);

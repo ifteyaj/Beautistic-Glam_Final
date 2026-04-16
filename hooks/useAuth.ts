@@ -54,6 +54,7 @@ export const useAuth = () => {
   // Initialize auth state on mount
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const initAuth = async () => {
       console.log('[Auth] Initializing...');
@@ -67,18 +68,22 @@ export const useAuth = () => {
           console.log('[Auth] Session found:', session.user.email);
           const userData = await fetchUserProfile(session.user.id, session.user.email);
           
-          setAuthState({
-            user: userData,
-            isAuthenticated: true,
-            isLoading: false,
-          });
+          if (mounted) {
+            setAuthState({
+              user: userData,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          }
         } else {
           console.log('[Auth] No session');
-          setAuthState({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
+          if (mounted) {
+            setAuthState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+          }
         }
       } catch (error) {
         console.error('[Auth] Init error:', error);
@@ -92,19 +97,44 @@ export const useAuth = () => {
       }
     };
 
+    // Fallback timeout - if init takes too long, stop loading
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        setAuthState(prev => {
+          if (prev.isLoading) {
+            return { ...prev, isLoading: false };
+          }
+          return prev;
+        });
+      }
+    }, 10000);
+
     initAuth();
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[Auth] State change:', event);
       
       if (event === 'SIGNED_IN' && session?.user) {
-        const userData = await fetchUserProfile(session.user.id, session.user.email);
-        setAuthState({
-          user: userData,
-          isAuthenticated: true,
-          isLoading: false,
-        });
+        try {
+          const userData = await fetchUserProfile(session.user.id, session.user.email);
+          setAuthState({
+            user: userData,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (err) {
+          setAuthState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
       } else if (event === 'SIGNED_OUT') {
         setAuthState({
           user: null,
@@ -136,9 +166,6 @@ export const useAuth = () => {
         isAuthenticated: true,
         isLoading: false,
       });
-    } else if (result.success && result.needsConfirmation) {
-      // Email confirmation required
-      setAuthState(prev => ({ ...prev, isLoading: false }));
     } else {
       setAuthState(prev => ({ ...prev, isLoading: false }));
     }

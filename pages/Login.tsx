@@ -90,9 +90,13 @@ const Login: React.FC = () => {
   // Prevent multiple rapid clicks on Create Account button
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Don't render if already authenticated (redirecting)
+  // Show loading while redirecting authenticated users
   if (isAuthenticated) {
-    return null;
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   return (

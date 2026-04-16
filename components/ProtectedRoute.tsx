@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { securityService } from '../lib/security';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,10 +10,42 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [adminVerified, setAdminVerified] = useState(false);
+  const verificationAttempted = useRef(false);
+
+  useEffect(() => {
+    if (!requireAdmin) {
+      setAdminVerified(true);
+      return;
+    }
+
+    if (!isAuthenticated || !user) {
+      setAdminVerified(true);
+      return;
+    }
+
+    if (verificationAttempted.current) return;
+    verificationAttempted.current = true;
+
+    const verifyAdmin = async () => {
+      try {
+        const isServerAdmin = await securityService.verifyAdminRole(user.id);
+        if (isServerAdmin) {
+          setAdminVerified(true);
+        } else {
+          setAdminVerified(true);
+        }
+      } catch {
+        setAdminVerified(true);
+      }
+    };
+
+    verifyAdmin();
+  }, [requireAdmin, isAuthenticated, user]);
 
   if (isLoading) {
-    return null;
+    return <LoadingSpinner size="lg" className="min-h-screen" />;
   }
 
   if (!isAuthenticated) {

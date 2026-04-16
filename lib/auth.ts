@@ -1,36 +1,36 @@
-/**
- * ============================================
- * SIMPLIFIED AUTH SERVICE
- * Production-ready authentication
- * ============================================
- */
-
 import { supabase } from '../lib/supabase';
+import { securityService } from './security';
 
 export const authService = {
-  /**
-   * Sign up with email and password
-   */
   async signUp(email: string, password: string, name: string) {
-    console.log('[Auth] Signup attempt:', email);
+    const identifier = `signup:${email.toLowerCase()}`;
+    const rateLimit = securityService.checkRateLimit(identifier);
     
+    if (!rateLimit.allowed) {
+      return { 
+        success: false, 
+        error: `Too many signup attempts. Please try again in ${rateLimit.retryAfter} seconds.` 
+      };
+    }
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { name },
-        },
+        options: { data: { name } },
       });
 
       if (error) {
-        console.error('[Auth] Signup error:', error);
+        if (error.message.includes('rate limit')) {
+          return { 
+            success: false, 
+            error: 'Too many signup attempts. Please wait and try again.' 
+          };
+        }
         
         let errorMessage = error.message;
         
-        if (error.message.includes('rate limit')) {
-          errorMessage = 'email rate limit exceeded - please wait 60 seconds';
-        } else if (error.message.includes('already been registered')) {
+        if (error.message.includes('already been registered')) {
           errorMessage = 'This email is already registered. Try signing in.';
         } else if (error.message.includes('valid email')) {
           errorMessage = 'Please enter a valid email address';
@@ -39,21 +39,7 @@ export const authService = {
         return { success: false, error: errorMessage };
       }
 
-      console.log('[Auth] Signup response:', data);
-
-      // Note: confirmation_sent is returned when email confirmation is enabled
-      // @ts-ignore - Supabase type definition issue
-      if (data?.confirmation_sent === true) {
-        return { 
-          success: true, 
-          needsConfirmation: true,
-          message: 'Please check your email to confirm your account' 
-        };
-      }
-
       if (data?.user) {
-        console.log('[Auth] User created:', data.user.id);
-
         try {
           await supabase.from('users').insert({
             id: data.user.id,
@@ -61,14 +47,13 @@ export const authService = {
             name,
             role: 'user',
           });
-        } catch (profileError: any) {
-          console.warn('[Auth] Profile note:', profileError.message);
+        } catch {
+          // Profile creation failed, but auth succeeded
         }
       }
 
       return { success: true, user: data.user };
     } catch (error: any) {
-      console.error('[Auth] Signup exception:', error);
       return { 
         success: false, 
         error: error.message || 'Sign up failed' 
@@ -76,11 +61,16 @@ export const authService = {
     }
   },
 
-  /**
-   * Sign in with email and password
-   */
   async signIn(email: string, password: string) {
-    console.log('[Auth] Signin attempt:', email);
+    const identifier = `signin:${email.toLowerCase()}`;
+    const rateLimit = securityService.checkRateLimit(identifier);
+    
+    if (!rateLimit.allowed) {
+      return { 
+        success: false, 
+        error: `Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.` 
+      };
+    }
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -89,8 +79,6 @@ export const authService = {
       });
 
       if (error) {
-        console.error('[Auth] Signin error:', error);
-        
         let errorMessage = error.message;
         
         if (error.message.includes('Invalid login credentials')) {
@@ -104,11 +92,10 @@ export const authService = {
         return { success: false, error: errorMessage };
       }
 
-      console.log('[Auth] Signin success:', data.user?.email);
+      securityService.resetRateLimit(identifier);
 
       return { success: true, user: data.user };
     } catch (error: any) {
-      console.error('[Auth] Signin exception:', error);
       return { 
         success: false, 
         error: error.message || 'Sign in failed' 
@@ -116,43 +103,38 @@ export const authService = {
     }
   },
 
-  /**
-   * Sign out
-   */
   async signOut() {
-    console.log('[Auth] Signout');
-
     try {
       const { error } = await supabase.auth.signOut();
-      
       if (error) {
         return { success: false, error: error.message };
       }
-
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Get current session
-   */
   async getSession() {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) throw error;
       return session;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
 
-  /**
-   * Reset password - send reset email
-   */
   async resetPassword(email: string) {
-    console.log('[Auth] Password reset request:', email);
+    const identifier = `reset:${email.toLowerCase()}`;
+    const rateLimit = securityService.checkRateLimit(identifier);
+    
+    if (!rateLimit.allowed) {
+      return { 
+        success: false, 
+        error: `Too many password reset attempts. Please try again in ${rateLimit.retryAfter} seconds.` 
+      };
+    }
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -162,24 +144,16 @@ export const authService = {
       });
 
       if (error) {
-        console.error('[Auth] Reset error:', error);
         return { success: false, error: error.message };
       }
 
-      console.log('[Auth] Reset email sent');
       return { success: true };
     } catch (error: any) {
-      console.error('[Auth] Reset exception:', error);
       return { success: false, error: error.message };
     }
   },
 
-  /**
-   * Update password (when logged in)
-   */
   async updatePassword(newPassword: string) {
-    console.log('[Auth] Password update');
-
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
@@ -193,5 +167,9 @@ export const authService = {
     } catch (error: any) {
       return { success: false, error: error.message };
     }
+  },
+
+  async verifyAdmin(userId: string) {
+    return securityService.verifyAdminRole(userId);
   },
 };
