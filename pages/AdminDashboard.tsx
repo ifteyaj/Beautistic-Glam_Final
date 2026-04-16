@@ -83,8 +83,8 @@ const AdminDashboard: React.FC = () => {
 
     const result = await productService.createProduct(newProduct);
 
-    if (result.success) {
-      await fetchProducts();
+    if (result.success && result.product) {
+      setProducts(prev => [result.product!, ...prev]);
       setIsAddModalOpen(false);
       setNewProduct({
         name: '',
