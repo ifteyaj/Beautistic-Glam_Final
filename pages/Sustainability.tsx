@@ -52,7 +52,7 @@ const Sustainability: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {initiatives.map((item, index) => (
-            <div key={index} className="bg-stone-50 p-8 rounded-[5px] hover:shadow-lg transition-shadow">
+            <div key={index} className="bg-white p-8 rounded-[5px] border border-stone-200 hover:border-brand transition-colors">
               <div className="w-14 h-14 bg-brand/10 rounded-full flex items-center justify-center mb-6">
                 <item.icon className="w-7 h-7 text-brand" />
               </div>
