@@ -142,8 +142,8 @@ const Navbar: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Right: Icons */}
-              <div className="flex items-center space-x-3 sm:space-x-5 lg:space-x-6">
+              {/* Right: Icons (Desktop only) */}
+              <div className="hidden md:flex items-center space-x-5 lg:space-x-6">
                 <button 
                   onClick={() => setIsSearchOpen(!isSearchOpen)} 
                   className="text-stone-600 hover:text-[#C24458] p-1"

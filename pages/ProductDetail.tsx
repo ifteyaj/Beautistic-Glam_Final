@@ -1,22 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
 import { useApp } from '../store/AppContext';
-import ProductCard from '../components/Product/ProductCard';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { ErrorState } from '../components/EmptyState';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { product, loading, error, refetch } = useProduct(id || '');
+  const { product, loading, error } = useProduct(id || '');
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'description' | 'ingredients' | 'howTo'>('description');
   const { addToCart, toggleWishlist, wishlist } = useApp();
-
-  const relatedProducts = useMemo(() => {
-    if (!product) return [];
-    return []; 
-  }, [product]);
 
   if (loading) {
     return <LoadingSpinner size="lg" className="min-h-[70vh]" />;
@@ -75,103 +67,43 @@ const ProductDetail: React.FC = () => {
           </div>
 
           <div className="space-y-6 pt-10 border-t border-stone-100">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               <div className="flex border border-stone-200 rounded-[5px] overflow-hidden">
-                <button onClick={() => setQuantity(q => Math.max(1, q-1))} className="w-14 h-14 flex items-center justify-center hover:bg-brand hover:text-white transition-colors border-r border-stone-200">-</button>
+                <button onClick={() => setQuantity(q => Math.max(1, q-1))} className="w-12 h-12 flex items-center justify-center hover:bg-brand hover:text-white transition-colors border-r border-stone-200 text-lg">-</button>
                 <input 
                   type="number" 
                   value={quantity} 
                   readOnly
-                  className="w-14 h-14 text-center border-none focus:ring-0 bg-transparent text-lg" 
+                  className="w-12 h-12 text-center border-none focus:ring-0 bg-transparent text-base" 
                 />
-                <button onClick={() => setQuantity(q => q+1)} className="w-14 h-14 flex items-center justify-center hover:bg-brand hover:text-white transition-colors border-l border-stone-200">+</button>
+                <button onClick={() => setQuantity(q => q+1)} className="w-12 h-12 flex items-center justify-center hover:bg-brand hover:text-white transition-colors border-l border-stone-200 text-lg">+</button>
               </div>
               <button 
-                onClick={() => addToCart(product, quantity)}
-                className="flex-1 bg-brand text-white h-14 uppercase tracking-widest text-sm bg-brand-hover transition-colors rounded-[5px] font-bold"
-              >
-                Add to Cart
-              </button>
-              <button 
                 onClick={() => toggleWishlist(product.id)}
-                className={`w-14 h-14 border border-stone-200 flex items-center justify-center transition-colors rounded-[5px] ${isWishlisted ? 'bg-brand/10 border-brand/20' : 'hover:bg-stone-50'}`}
+                className={`w-12 h-12 border border-stone-200 flex items-center justify-center transition-colors rounded-[5px] ${isWishlisted ? 'bg-brand/10 border-brand/20' : 'hover:bg-stone-50'}`}
               >
-                <svg className={`w-6 h-6 ${isWishlisted ? 'fill-brand stroke-brand' : 'stroke-stone-600'}`} fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Details Tabs */}
-          <div className="pt-16">
-            <div className="flex border-b border-stone-100 mb-8 overflow-x-auto relative">
-              <button 
-                onClick={() => setActiveTab('description')}
-                className={`relative pb-4 px-8 text-xs uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'description' ? 'text-brand font-bold' : 'text-stone-400 hover:text-stone-600'}`}
-              >
-                Description
-                {activeTab === 'description' && (
-                  <div className="absolute bottom-0 left-8 right-8 h-[1px] bg-brand animate-fadeIn" />
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('ingredients')}
-                className={`relative pb-4 px-8 text-xs uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'ingredients' ? 'text-brand font-bold' : 'text-stone-400 hover:text-stone-600'}`}
-              >
-                Ingredients
-                {activeTab === 'ingredients' && (
-                  <div className="absolute bottom-0 left-8 right-8 h-[1px] bg-brand animate-fadeIn" />
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('howTo')}
-                className={`relative pb-4 px-8 text-xs uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'howTo' ? 'text-brand font-bold' : 'text-stone-400 hover:text-stone-600'}`}
-              >
-                How to Use
-                {activeTab === 'howTo' && (
-                  <div className="absolute bottom-0 left-8 right-8 h-[1px] bg-brand animate-fadeIn" />
-                )}
+                <svg className={`w-5 h-5 ${isWishlisted ? 'fill-brand stroke-brand' : 'stroke-stone-600'}`} fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
               </button>
             </div>
             
-            <div className="min-h-[150px] animate-fadeIn bg-stone-50/50 p-8 rounded-[5px] border border-stone-100">
-              {activeTab === 'description' && (
-                <div className="prose prose-stone prose-lg max-w-none">
-                  <p>{product.description}</p>
-                  <p className="mt-4">Our commitment to clean beauty means this product is formulated without parabens, sulfates, or synthetic fragrances. Each bottle is carefully crafted to deliver visible results while maintaining skin health.</p>
-                </div>
-              )}
-              {activeTab === 'ingredients' && (
-                <ul className="grid grid-cols-2 gap-6">
-                  {product.ingredients.map(ing => (
-                    <li key={ing} className="flex items-center gap-3 text-base text-stone-600">
-                      <span className="w-1.5 h-1.5 bg-brand rounded-full" /> {ing}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {activeTab === 'howTo' && (
-                <div className="text-stone-600 text-base leading-relaxed">
-                  <p className="font-bold mb-4 text-brand text-lg">Step-by-Step Instructions:</p>
-                  <p>{product.howToUse}</p>
-                  <p className="mt-6 italic text-sm">Tip: For best results, use consistently as part of your daily routine. Patch test before use.</p>
-                </div>
-              )}
-            </div>
+            <button 
+              onClick={() => addToCart(product, quantity)}
+              className="w-full bg-gradient-to-r from-[#C24458] to-[#A83850] text-white h-16 uppercase tracking-widest text-sm hover:from-[#A83850] hover:to-[#8B2F45] transition-all rounded-[5px] font-bold shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              Add to Cart
+            </button>
+          </div>
+
+          {/* Description */}
+          <div className="pt-12">
+            <h3 className="text-lg font-serif text-stone-900 mb-3">Description</h3>
+            <p className="text-stone-600 leading-relaxed">{product.description}</p>
           </div>
         </div>
       </div>
-
-      {/* Related Products */}
-      {relatedProducts.length > 0 && (
-        <section className="mt-32 pt-24 border-t border-stone-100">
-          <h2 className="text-4xl font-serif text-stone-900 mb-12">You may also like</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
-            {relatedProducts.map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 };
