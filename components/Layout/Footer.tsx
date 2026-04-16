@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
           {/* Left: Brand Column */}
           <div className="flex flex-col items-start">
             <img src="/logo.svg" alt="Beautistic Glam" className="h-10 mb-6 brightness-0 invert" />
-            <p className="text-sm leading-relaxed mb-4">Crafting premium beauty experiences through nature's most potent ingredients and modern science.</p>
+            <p className="text-sm leading-relaxed mb-4 max-w-xs">Crafting premium beauty experiences through nature's most potent ingredients and modern science.</p>
             <div className="flex items-center gap-4">
               <a href="https://www.instagram.com/beautisticglam?igsh=ZDV0dmtkcmp1dHls" target="_blank" rel="noopener noreferrer" className="hover:text-brand transition-colors text-sm">Instagram</a>
               <a href="https://www.facebook.com/profile.php?id=61576665968495" target="_blank" rel="noopener noreferrer" className="hover:text-brand transition-colors text-sm">Facebook</a>
