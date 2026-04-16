@@ -94,7 +94,7 @@ const Terms: React.FC = () => {
 
           <h2 className="text-2xl font-serif text-stone-900 mt-12 mb-4">11. Governing Law</h2>
           <p className="text-stone-600 mb-6">
-            These Terms shall be governed by and construed in accordance with the laws of the State of New York, without regard to its conflict of law provisions. Any disputes shall be resolved in the courts of New York County, New York.
+            These Terms shall be governed by and construed in accordance with the laws of Bangladesh, without regard to its conflict of law provisions. Any disputes shall be resolved in the courts of Dhaka.
           </p>
 
           <h2 className="text-2xl font-serif text-stone-900 mt-12 mb-4">12. Changes to Terms</h2>
@@ -105,8 +105,8 @@ const Terms: React.FC = () => {
           <h2 className="text-2xl font-serif text-stone-900 mt-12 mb-4">13. Contact Information</h2>
           <p className="text-stone-600 mb-6">
             For questions about these Terms, please contact us at:<br />
-            <strong>Email:</strong> legal@beautisticglam.com<br />
-            <strong>Mail:</strong> Beautistic Glam, Attn: Legal Department, 245 Fifth Avenue, Suite 500, New York, NY 10016
+            <strong>Email:</strong> beautisticglam@gmail.com<br />
+            <strong>Mail:</strong> Beautistic Glam, Middle Badda, Dhaka, Bangladesh
           </p>
         </div>
       </section>

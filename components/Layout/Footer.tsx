@@ -11,9 +11,8 @@ const Footer: React.FC = () => {
             <img src="/logo.svg" alt="Beautistic Glam" className="h-12 mb-8 brightness-0 invert" />
             <p className="text-sm leading-relaxed mb-8">Crafting premium beauty experiences through nature's most potent ingredients and modern science. Luxury skincare for every body.</p>
             <div className="flex space-x-6">
-              <a href="#" className="hover:text-brand transition-colors">Instagram</a>
-              <a href="#" className="hover:text-brand transition-colors">Pinterest</a>
-              <a href="#" className="hover:text-brand transition-colors">YouTube</a>
+              <a href="https://www.instagram.com/beautisticglam?igsh=ZDV0dmtkcmp1dHls" target="_blank" rel="noopener noreferrer" className="hover:text-brand transition-colors">Instagram</a>
+              <a href="https://www.facebook.com/profile.php?id=61576665968495" target="_blank" rel="noopener noreferrer" className="hover:text-brand transition-colors">Facebook</a>
             </div>
           </div>
 
@@ -44,13 +43,6 @@ const Footer: React.FC = () => {
               <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
             </ul>
-          </div>
-        </div>
-        
-        <div className="mt-24 pt-8 border-t border-stone-800 flex flex-col md:flex-row justify-between items-center text-[10px] uppercase tracking-widest">
-          <p>© 2026 Beautistic Glam BEAUTY CO. ALL RIGHTS RESERVED.</p>
-          <div className="flex space-x-8 mt-4 md:mt-0">
-             <span className="text-brand font-bold">Handcrafted with Care</span>
           </div>
         </div>
       </div>

@@ -17,25 +17,11 @@ const Contact: React.FC = () => {
 
   const locations = [
     {
-      city: 'New York',
-      address: '245 Fifth Avenue, Suite 500',
-      zip: 'New York, NY 10016',
-      phone: '+1 (212) 555-0123',
-      hours: 'Mon-Sat: 10am-8pm, Sun: 11am-6pm'
-    },
-    {
-      city: 'Los Angeles',
-      address: '8500 Beverly Boulevard',
-      zip: 'Los Angeles, CA 90048',
-      phone: '+1 (310) 555-0456',
-      hours: 'Mon-Sat: 10am-9pm, Sun: 11am-7pm'
-    },
-    {
-      city: 'Miami',
-      address: '1000 Brickell Avenue',
-      zip: 'Miami, FL 33131',
-      phone: '+1 (305) 555-0789',
-      hours: 'Mon-Sat: 10am-8pm, Sun: 12pm-6pm'
+      city: 'Dhaka',
+      address: 'Middle Badda',
+      zip: 'Dhaka, Bangladesh',
+      phone: '01330800078',
+      hours: 'Sat-Thu: 10am-10pm, Fri: 3pm-10pm'
     }
   ];
 
@@ -148,7 +134,7 @@ const Contact: React.FC = () => {
                 <Mail className="w-5 h-5 text-brand" />
                 <h4 className="font-bold text-stone-900">Email Us</h4>
               </div>
-              <p className="text-stone-600">hello@beautisticglam.com</p>
+              <p className="text-stone-600">beautisticglam@gmail.com</p>
               <p className="text-xs text-stone-500 mt-2">We respond within 24 hours</p>
             </div>
           </div>

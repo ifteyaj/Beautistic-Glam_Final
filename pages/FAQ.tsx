@@ -125,7 +125,7 @@ const FAQ: React.FC = () => {
           <h3 className="text-xl font-serif text-stone-900 mb-2">Still have questions?</h3>
           <p className="text-stone-600 mb-4">Our customer care team is here to help.</p>
           <a href="mailto:hello@beautisticglam.com" className="text-brand font-bold hover:underline">
-            hello@beautisticglam.com
+beautisticglam@gmail.com
           </a>
         </div>
       </section>

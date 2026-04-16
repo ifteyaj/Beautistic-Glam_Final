@@ -72,7 +72,7 @@ const Privacy: React.FC = () => {
             <li>Request data portability</li>
             <li>Restrict processing of your information</li>
           </ul>
-          <p className="text-stone-600 mb-6">To exercise these rights, contact us at privacy@beautisticglam.com.</p>
+          <p className="text-stone-600 mb-6">To exercise these rights, contact us at beautisticglam@gmail.com.</p>
 
           <h2 className="text-2xl font-serif text-stone-900 mt-12 mb-4">6. Cookies</h2>
           <p className="text-stone-600 mb-6">
@@ -82,8 +82,8 @@ const Privacy: React.FC = () => {
           <h2 className="text-2xl font-serif text-stone-900 mt-12 mb-4">7. Contact Us</h2>
           <p className="text-stone-600 mb-6">
             If you have questions about this Privacy Policy, please contact us at:<br />
-            <strong>Email:</strong> privacy@beautisticglam.com<br />
-            <strong>Mail:</strong> Beautistic Glam, Attn: Privacy Team, 245 Fifth Avenue, Suite 500, New York, NY 10016
+            <strong>Email:</strong> beautisticglam@gmail.com<br />
+            <strong>Mail:</strong> Beautistic Glam, Middle Badda, Dhaka, Bangladesh
           </p>
 
           <h2 className="text-2xl font-serif text-stone-900 mt-12 mb-4">8. Changes to This Policy</h2>
