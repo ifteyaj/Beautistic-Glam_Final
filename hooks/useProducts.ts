@@ -20,12 +20,12 @@ export const useProducts = (options: UseProductsOptions = {}) => {
       setLoading(true);
       setError(null);
 
-      const result = await Promise.race([
-        productService.getProducts(options),
-        new Promise<{ success: false; error: string; products: [] }>((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 10000)
-        )
-      ]);
+      const fetchPromise = productService.getProducts(options);
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - Supabase may be paused')), 15000)
+      );
+
+      const result = await Promise.race([fetchPromise, timeoutPromise]);
 
       if (!result.success) {
         setError(result.error || 'Failed to load products');
@@ -70,7 +70,12 @@ export const useProduct = (productId: string) => {
       setLoading(true);
       setError(null);
 
-      const result = await productService.getProduct(productId);
+      const fetchPromise = productService.getProduct(productId);
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - Supabase may be paused')), 15000)
+      );
+
+      const result = await Promise.race([fetchPromise, timeoutPromise]);
 
       if (!result.success) {
         setError(result.error || 'Product not found');
@@ -80,7 +85,7 @@ export const useProduct = (productId: string) => {
       }
     } catch (err: any) {
       console.error('Error fetching product:', err);
-      setError(err.message || 'Failed to load product');
+      setError(err.message || 'Failed to load product. Please check your connection.');
     } finally {
       setLoading(false);
     }

@@ -12,8 +12,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    storage: localStorage,
+    storageKey: 'sb-hybxyojngxzurpdukgyi-auth-v2',
   },
 });
+
+// Storage client for images
+export const storage = supabase.storage;
 
 // ============================================
 // Database Types

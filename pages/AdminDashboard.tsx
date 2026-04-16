@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Search, Trash2, X, Image as ImageIcon, Package, ShoppingCart, Eye, EyeOff, ChevronDown } from 'lucide-react';
 import { productService, ProductInput } from '../lib/products';
 import { orderService, OrderRecord, OrderItemRecord } from '../lib/orders';
+import { storage } from '../lib/supabase';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import type { Product } from '../types';
 import { CATEGORIES } from '../constants';
@@ -20,6 +21,7 @@ const AdminDashboard: React.FC = () => {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [newProduct, setNewProduct] = useState<ProductInput>({
     name: '',
     brand: '',
@@ -441,18 +443,75 @@ const AdminDashboard: React.FC = () => {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">Image URL *</label>
-                        <div className="relative">
-                          <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-                          <input 
-                            required
-                            type="url" 
-                            value={newProduct.image}
-                            onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
-                            className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-[5px] text-sm outline-none focus:border-brand"
-                            placeholder="https://images.unsplash.com/..."
-                          />
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">Image *</label>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const { data } = await storage.from('Product_Image').list();
+                              console.log('Storage buckets:', data);
+                            } catch(e) {
+                              console.log('Storage error:', e);
+                            }
+                          }}
+                          className="text-xs text-stone-400 mb-2"
+                        >
+                          Test Storage
+                        </button>
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2 px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-[5px] text-sm cursor-pointer hover:bg-stone-100 transition-colors">
+                            <ImageIcon className="w-4 h-4" />
+                            {imageUploading ? 'Uploading...' : 'Choose Image'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={imageUploading}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                
+                                setImageUploading(true);
+                                try {
+                                  console.log('Starting upload...');
+                                  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+                                  console.log('File name:', fileName);
+                                  
+                                  const { data, error } = await storage
+                                    .from('Product_Image')
+                                    .upload(fileName, file);
+                                
+                                  console.log('Upload result:', { data, error });
+                                  
+                                  if (error) {
+                                    alert(`Upload failed: ${error.message}`);
+                                    throw error;
+                                  }
+                                  
+                                  const { data: urlData } = storage
+                                    .from('Product_Image')
+                                    .getPublicUrl(fileName);
+                                
+                                  console.log('Public URL:', urlData.publicUrl);
+                                  setNewProduct({ ...newProduct, image: urlData.publicUrl });
+                                } catch (err: any) {
+                                  console.error('Full upload error:', err);
+                                  alert('Failed to upload image: ' + (err?.message || err));
+                                } finally {
+                                  setImageUploading(false);
+                                }
+                              }}
+                            />
+                          </label>
+                          {newProduct.image && (
+                            <span className="text-xs text-stone-500 truncate max-w-[200px]">
+                              {newProduct.image.split('/').pop()}
+                            </span>
+                          )}
                         </div>
+                        {newProduct.image && (
+                          <img src={newProduct.image} alt="Preview" className="mt-2 w-24 h-24 object-cover rounded-[5px] border" />
+                        )}
                       </div>
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1.5">Description</label>
