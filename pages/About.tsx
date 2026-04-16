@@ -67,16 +67,9 @@ const About: React.FC = () => {
           <h3 className="text-4xl font-serif text-stone-900">The Journey</h3>
         </div>
         <div className="max-w-3xl mx-auto">
-          <p className="text-stone-600 leading-relaxed text-lg mb-6">
+          <p className="text-stone-600 leading-relaxed text-lg">
             Beautistic Glam was founded with a passion for clean, effective beauty. We started as a small boutique brand dedicated to creating products that truly work. Based in Dhaka, Bangladesh, we've grown to serve customers nationwide who share our belief in the power of quality ingredients and ethical beauty.
           </p>
-          <div className="mt-8 p-6 bg-stone-50 rounded-[5px]">
-            <p className="text-sm text-stone-500 uppercase tracking-widest font-bold mb-2">Location</p>
-            <p className="text-stone-700">Middle Badda, Dhaka, Bangladesh</p>
-            <p className="text-sm text-stone-500 uppercase tracking-widest font-bold mb-2 mt-4">Contact</p>
-            <p className="text-stone-700">01330800078</p>
-            <p className="text-stone-700">beautisticglam@gmail.com</p>
-          </div>
         </div>
       </section>
 
