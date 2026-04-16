@@ -37,8 +37,11 @@ const Shop: React.FC = () => {
   return (
     <div className="pb-24">
       {/* Hero-like Header */}
-      <section className="bg-[#F2EDEA] py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section 
+        className="py-20 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(/hero-image.jpg)' }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center bg-white/80 py-20">
           <h1 className="text-5xl font-serif text-stone-900 mb-4">Shop Collection</h1>
           <p className="text-stone-600 max-w-xl mx-auto">Discover our curated selection of premium beauty products</p>
           <div className="flex items-center justify-center mt-4 text-xs text-stone-400 uppercase tracking-widest">
