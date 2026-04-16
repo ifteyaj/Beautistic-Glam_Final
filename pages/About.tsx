@@ -74,36 +74,54 @@ const About: React.FC = () => {
       </section>
 
       {/* Our Values */}
-      <section className="bg-stone-900 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-brand mb-4 font-bold">Our Values</h2>
-          <h3 className="text-4xl font-serif text-white">What We Stand For</h3>
-        </div>
-        <div className="grid md:grid-cols-5 gap-8">
-          <div className="text-center bg-stone-50 p-6 rounded-[5px]">
-            <Leaf className="w-10 h-10 mx-auto mb-4 text-brand" />
-            <h4 className="text-sm font-bold uppercase tracking-wider mb-2">Clean Ingredients</h4>
-            <p className="text-stone-600 text-sm">Only the finest natural and safe ingredients</p>
+      <section className="py-24 bg-gradient-to-b from-stone-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-xs uppercase tracking-[0.2em] text-brand mb-4 font-bold">Our Values</h2>
+            <h3 className="text-4xl md:text-5xl font-serif text-stone-900 mb-4">What We Stand For</h3>
+            <p className="text-stone-500 max-w-xl mx-auto">Our commitment to excellence guides every product we create</p>
           </div>
-          <div className="text-center bg-stone-50 p-6 rounded-[5px]">
-            <Heart className="w-10 h-10 mx-auto mb-4 text-brand" />
-            <h4 className="text-sm font-bold uppercase tracking-wider mb-2">Cruelty-Free</h4>
-            <p className="text-stone-600 text-sm">Never tested on animals, ever</p>
-          </div>
-          <div className="text-center bg-stone-50 p-6 rounded-[5px]">
-            <Award className="w-10 h-10 mx-auto mb-4 text-brand" />
-            <h4 className="text-sm font-bold uppercase tracking-wider mb-2">Premium Quality</h4>
-            <p className="text-stone-600 text-sm">Luxury formulations that deliver results</p>
-          </div>
-          <div className="text-center bg-stone-50 p-6 rounded-[5px]">
-            <Sparkles className="w-10 h-10 mx-auto mb-4 text-brand" />
-            <h4 className="text-sm font-bold uppercase tracking-wider mb-2">Sustainable</h4>
-            <p className="text-stone-600 text-sm">Eco-conscious packaging and practices</p>
-          </div>
-          <div className="text-center bg-stone-50 p-6 rounded-[5px]">
-            <Gem className="w-10 h-10 mx-auto mb-4 text-brand" />
-            <h4 className="text-sm font-bold uppercase tracking-wider mb-2">Inclusive Beauty</h4>
-            <p className="text-stone-600 text-sm">Products for every skin type and tone</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="group text-center p-8 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+              <div className="w-20 h-20 mx-auto mb-6 bg-brand/10 rounded-full flex items-center justify-center group-hover:bg-brand/20 transition-colors">
+                <Leaf className="w-10 h-10 text-brand" />
+              </div>
+              <h4 className="text-lg font-serif text-stone-900 mb-3">Clean Ingredients</h4>
+              <p className="text-stone-500 leading-relaxed">Only the finest natural and safe ingredients in every formula</p>
+            </div>
+            
+            <div className="group text-center p-8 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+              <div className="w-20 h-20 mx-auto mb-6 bg-brand/10 rounded-full flex items-center justify-center group-hover:bg-brand/20 transition-colors">
+                <Heart className="w-10 h-10 text-brand" />
+              </div>
+              <h4 className="text-lg font-serif text-stone-900 mb-3">Cruelty-Free</h4>
+              <p className="text-stone-500 leading-relaxed">Never tested on animals. Ethical beauty, always.</p>
+            </div>
+            
+            <div className="group text-center p-8 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+              <div className="w-20 h-20 mx-auto mb-6 bg-brand/10 rounded-full flex items-center justify-center group-hover:bg-brand/20 transition-colors">
+                <Award className="w-10 h-10 text-brand" />
+              </div>
+              <h4 className="text-lg font-serif text-stone-900 mb-3">Premium Quality</h4>
+              <p className="text-stone-500 leading-relaxed">Luxury formulations that deliver real, visible results</p>
+            </div>
+            
+            <div className="group text-center p-8 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+              <div className="w-20 h-20 mx-auto mb-6 bg-brand/10 rounded-full flex items-center justify-center group-hover:bg-brand/20 transition-colors">
+                <Sparkles className="w-10 h-10 text-brand" />
+              </div>
+              <h4 className="text-lg font-serif text-stone-900 mb-3">Sustainable</h4>
+              <p className="text-stone-500 leading-relaxed">Eco-conscious packaging and responsible practices</p>
+            </div>
+            
+            <div className="group text-center p-8 bg-white rounded-2xl border border-stone-100 shadow-sm hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+              <div className="w-20 h-20 mx-auto mb-6 bg-brand/10 rounded-full flex items-center justify-center group-hover:bg-brand/20 transition-colors">
+                <Gem className="w-10 h-10 text-brand" />
+              </div>
+              <h4 className="text-lg font-serif text-stone-900 mb-3">Inclusive Beauty</h4>
+              <p className="text-stone-500 leading-relaxed">Products designed for every skin type and tone</p>
+            </div>
           </div>
         </div>
       </section>
