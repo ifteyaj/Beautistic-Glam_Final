@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-stone-900 text-stone-400 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand Column */}
           <div className="flex flex-col items-start">
             <img src="/logo.svg" alt="Beautistic Glam" className="h-10 mb-8 brightness-0 invert" />
