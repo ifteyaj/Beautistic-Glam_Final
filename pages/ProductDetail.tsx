@@ -58,8 +58,6 @@ const ProductDetail: React.FC = () => {
             <p className="text-6xl font-serif text-brand font-bold">${product.price.toFixed(2)}</p>
           </div>
 
-          <p className="text-stone-600 leading-relaxed text-lg">{product.description}</p>
-
           <div className="flex flex-wrap gap-2">
             {product.tags.map(tag => (
               <span key={tag} className="px-4 py-2 bg-stone-50 border border-stone-100 text-brand text-[10px] uppercase tracking-widest rounded-[5px] font-bold">{tag}</span>

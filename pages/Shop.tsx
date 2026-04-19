@@ -113,7 +113,7 @@ const Shop: React.FC = () => {
               <div className="text-center py-20">
                 <p className="text-stone-500 mb-6">No products found for your criteria.</p>
                 <button 
-                  onClick={() => { setPriceRange([0, 1000]); setSortBy('default'); }}
+                  onClick={() => { setSortBy('default'); setSearchParams({}); }}
                   className="text-brand hover:underline"
                 >
                   Clear all filters
