@@ -58,6 +58,11 @@ const ProductDetail: React.FC = () => {
             <p className="text-6xl font-serif text-brand font-bold">${product.price.toFixed(2)}</p>
           </div>
 
+          <div>
+            <h3 className="text-lg font-serif text-stone-900 mb-3">Description</h3>
+            <p className="text-stone-600 leading-relaxed">{product.description}</p>
+          </div>
+
           <div className="flex flex-wrap gap-2">
             {product.tags.map(tag => (
               <span key={tag} className="px-4 py-2 bg-stone-50 border border-stone-100 text-brand text-[10px] uppercase tracking-widest rounded-[5px] font-bold">{tag}</span>
@@ -93,12 +98,6 @@ const ProductDetail: React.FC = () => {
               </svg>
               Add to Cart
             </button>
-          </div>
-
-          {/* Description */}
-          <div className="pt-12">
-            <h3 className="text-lg font-serif text-stone-900 mb-3">Description</h3>
-            <p className="text-stone-600 leading-relaxed">{product.description}</p>
           </div>
         </div>
       </div>
