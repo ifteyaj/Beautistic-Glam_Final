@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useProducts } from '../hooks/useProducts';
 import { CATEGORIES } from '../constants';
@@ -8,7 +8,6 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 const Shop: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState<'default' | 'price-low' | 'price-high' | 'rating' | 'newest'>('default');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
   
   const query = searchParams.get('q');
   const category = searchParams.get('category') || undefined;
@@ -18,10 +17,6 @@ const Shop: React.FC = () => {
     sortBy,
     searchQuery: query || undefined,
   });
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-  }, [products, priceRange]);
 
   if (error) {
     return (
@@ -81,24 +76,7 @@ const Shop: React.FC = () => {
               </ul>
             </div>
 
-            {/* Price Range */}
-            <div className="bg-stone-50 p-6 rounded-[5px]">
-              <h4 className="text-xs uppercase tracking-[0.2em] font-bold text-brand mb-4">Price Range</h4>
-              <div className="space-y-4">
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="500" 
-                  value={priceRange[1]}
-                  onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
-                  className="w-full accent-brand h-1 bg-stone-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <div className="flex justify-between text-xs text-stone-500">
-                  <span>$0</span>
-                  <span>${priceRange[1]}</span>
-                </div>
-              </div>
-            </div>
+
           </aside>
 
           {/* Products Grid */}
@@ -106,7 +84,7 @@ const Shop: React.FC = () => {
             {/* Sort Bar */}
             <div className="flex justify-between items-center mb-8 pb-4 border-b border-stone-100">
               <p className="text-sm text-stone-500">
-                Showing <span className="text-brand font-medium">{filteredProducts.length}</span> products
+                Showing <span className="text-brand font-medium">{products.length}</span> products
               </p>
               <select 
                 value={sortBy}
@@ -125,9 +103,9 @@ const Shop: React.FC = () => {
               <div className="min-h-[50vh] flex items-center justify-center">
                 <LoadingSpinner size="lg" />
               </div>
-            ) : filteredProducts.length > 0 ? (
+            ) : products.length > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredProducts.map(product => (
+                {products.map(product => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
@@ -135,7 +113,7 @@ const Shop: React.FC = () => {
               <div className="text-center py-20">
                 <p className="text-stone-500 mb-6">No products found for your criteria.</p>
                 <button 
-                  onClick={() => { setPriceRange([0, 500]); setSortBy('default'); }}
+                  onClick={() => { setPriceRange([0, 1000]); setSortBy('default'); }}
                   className="text-brand hover:underline"
                 >
                   Clear all filters

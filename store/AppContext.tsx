@@ -14,7 +14,7 @@ interface AppContextType {
   updateQuantity: (productId: string, quantity: number) => Promise<{ success: boolean; error?: string }>;
   toggleWishlist: (productId: string) => Promise<{ success: boolean; error?: string }>;
   clearCart: () => Promise<{ success: boolean; error?: string }>;
-  login: (user: User) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   addProduct: (product: Product) => void;
   removeProduct: (productId: string) => void;
@@ -66,7 +66,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       },
       toggleWishlist: async (productId) => toggleWishlistHook(productId),
       clearCart: async () => clearCart(),
-      login: login as any,
+      login,
       logout,
       addProduct: () => {},
       removeProduct: () => {},

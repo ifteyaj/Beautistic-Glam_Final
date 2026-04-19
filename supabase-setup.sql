@@ -144,13 +144,8 @@ CREATE POLICY "Users can create order items" ON public.order_items
 -- Service role can manage order items
 DROP POLICY IF EXISTS "Service role can manage order items" ON public.order_items;
 CREATE POLICY "Service role can manage order items" ON public.order_items
-  FOR ALL USING (auth.role() = 'service_role');
-
-
+  FOR ALL USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
-
-);
 
 
 -- 5. CART TABLE (for persistent cart)

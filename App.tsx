@@ -33,10 +33,6 @@ const ScrollToTop = () => {
 };
 
 const App: React.FC = () => {
-  useEffect(() => {
-    console.log('App mounted');
-  }, []);
-
   return (
     <Router>
       <AppProvider>
